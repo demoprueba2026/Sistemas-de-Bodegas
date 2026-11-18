@@ -28,7 +28,7 @@
       (product ? product.stock : 0) + '"></div>' +
       '<div class="field"><label for="prod-min">Stock mínimo</label><input id="prod-min" name="min" type="number" min="0" step="1" value="' +
       (product ? product.min : 5) + '"></div>' +
-      '<p class="currency-rate-note">Conversión fija de referencia: 1 USD = ' + app.exchangeRate() + ' Bs.</p></div>' +
+      '<p class="currency-rate-note">Tasa oficial BCV: 1 USD = ' + app.exchangeRate() + ' Bs.</p></div>' +
       '<div class="modal-actions"><button type="button" class="button" data-action="close-modal">Cancelar</button>' +
       '<button type="submit" class="button primary">' + (editing ? "Guardar cambios" : "Guardar producto") + '</button></div></form></div>';
     document.getElementById("prod-name").focus();

@@ -3,7 +3,40 @@
 
   var toastTimer;
   var THEME_KEY = "mercado-theme";
+  var RATE_CACHE_KEY = "mercado-bcv-rate-v1";
+  var RATE_API_URL = "https://ve.dolarapi.com/v1/dolares/oficial";
+  var RATE_REFRESH_INTERVAL = 60 * 60 * 1000;
   var BCV_RATE = 920;
+  var rateUpdatedAt = "";
+  var rateRequestInProgress = false;
+  var lastRateRequestAt = 0;
+
+  function loadRateCache() {
+    try {
+      var cached = JSON.parse(localStorage.getItem(RATE_CACHE_KEY) || "null");
+      if (cached && Number.isFinite(cached.rate) && cached.rate > 0) {
+        BCV_RATE = cached.rate;
+        rateUpdatedAt = typeof cached.updatedAt === "string" &&
+          Number.isFinite(new Date(cached.updatedAt).getTime()) ? cached.updatedAt : "";
+      }
+    } catch (error) {
+      console.error("No se pudo leer la tasa BCV guardada:", error);
+    }
+  }
+
+  function formatRateDate(value) {
+    if (!value) return "";
+    var date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return "";
+    return new Intl.DateTimeFormat("es-VE", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "America/Caracas"
+    }).format(date);
+  }
+
+  loadRateCache();
 
   app.esc = function (value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
@@ -17,12 +50,13 @@
 
   app.moneyUsd = function (bolivares) {
     return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
-      .format((Number(bolivares) || 0) / BCV_RATE);
+      .format((Number(bolivares) || 0) / app.exchangeRate());
   };
 
   app.moneyPair = function (bolivares) {
+    var amount = Number(bolivares) || 0;
     return '<span class="money-pair"><span>' + app.esc(app.money(bolivares)) +
-      '</span><small class="money-secondary">' + app.esc(app.moneyUsd(bolivares)) + '</small></span>';
+      '</span><small class="money-secondary" data-bs-value="' + amount + '">' + app.esc(app.moneyUsd(amount)) + '</small></span>';
   };
 
   app.formatBsInput = function (value) {
@@ -32,7 +66,7 @@
 
   app.formatUsdInput = function (value) {
     var amount = Number(value);
-    return Number.isFinite(amount) ? (amount / BCV_RATE).toFixed(2) : "";
+    return Number.isFinite(amount) ? (amount / app.exchangeRate()).toFixed(2) : "";
   };
 
   app.syncCurrencyInput = function (input) {
@@ -52,12 +86,111 @@
     if (input.dataset.currencyKind === "bs") {
       dollarsInput.value = app.formatUsdInput(amount);
     } else {
-      bolivaresInput.value = app.formatBsInput(amount * BCV_RATE);
+      bolivaresInput.value = app.formatBsInput(amount * app.exchangeRate());
     }
   };
 
   app.exchangeRate = function () {
     return BCV_RATE;
+  };
+
+  app.exchangeRateUpdatedAt = function () {
+    return rateUpdatedAt;
+  };
+
+  app.updateExchangeRateDisplay = function () {
+    var value = document.getElementById("exchange-rate-value");
+    var date = document.getElementById("exchange-rate-date");
+    var indicator = document.getElementById("exchange-rate");
+    if (value) value.textContent = new Intl.NumberFormat("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(BCV_RATE);
+    if (date) {
+      date.textContent = formatRateDate(rateUpdatedAt) || "tasa de respaldo";
+      date.title = rateUpdatedAt ? new Date(rateUpdatedAt).toLocaleString("es-VE") : "Tasa de referencia sin fecha";
+    }
+    if (indicator) {
+      indicator.classList.toggle("stale", !rateUpdatedAt);
+      indicator.title = rateUpdatedAt
+        ? "Tasa oficial BCV publicada el " + formatRateDate(rateUpdatedAt)
+        : "Sin tasa BCV descargada; se usa la última tasa guardada o la tasa de inicio.";
+    }
+  };
+
+  app.refreshExchangeRate = function () {
+    if (rateRequestInProgress) return Promise.resolve(false);
+    rateRequestInProgress = true;
+    lastRateRequestAt = Date.now();
+
+    var controller = new AbortController();
+    var requestTimeout = window.setTimeout(function () { controller.abort(); }, 15000);
+    return fetch(RATE_API_URL, { cache: "no-store", signal: controller.signal })
+      .then(function (response) {
+        if (!response.ok) throw new Error("La API de tasa BCV respondió con " + response.status + ".");
+        return response.json();
+      })
+      .then(function (data) {
+        var rate = Number(data && data.promedio);
+        var updatedAt = data && data.fechaActualizacion;
+        if (!data || data.moneda !== "USD" || data.fuente !== "oficial" ||
+          !Number.isFinite(rate) || rate <= 0 ||
+          typeof updatedAt !== "string" || !Number.isFinite(new Date(updatedAt).getTime())) {
+          throw new Error("La respuesta de la tasa BCV no tiene un formato válido.");
+        }
+
+        var changed = rate !== BCV_RATE || updatedAt !== rateUpdatedAt;
+        BCV_RATE = rate;
+        rateUpdatedAt = updatedAt;
+        try {
+          localStorage.setItem(RATE_CACHE_KEY, JSON.stringify({ rate: rate, updatedAt: updatedAt }));
+        } catch (error) {
+          console.error("No se pudo guardar la tasa BCV:", error);
+        }
+
+        app.updateExchangeRateDisplay();
+        if (changed) {
+          document.querySelectorAll(".money-secondary[data-bs-value]").forEach(function (element) {
+            element.textContent = app.moneyUsd(Number(element.dataset.bsValue));
+          });
+          document.querySelectorAll(".button-usd[data-bs-value]").forEach(function (element) {
+            element.textContent = "(" + app.moneyUsd(Number(element.dataset.bsValue)) + ")";
+          });
+          document.querySelectorAll(".currency-rate-note").forEach(function (element) {
+            element.textContent = "Tasa oficial BCV: 1 USD = " + app.exchangeRate() + " Bs.";
+          });
+          document.querySelectorAll("[data-currency-group]").forEach(function (group) {
+            var bsInput = group.querySelector('[data-currency-kind="bs"]');
+            var usdInput = group.querySelector('[data-currency-kind="usd"]');
+            if (bsInput && usdInput && document.activeElement !== usdInput) app.syncCurrencyInput(bsInput);
+          });
+        }
+        return true;
+      })
+      .catch(function (error) {
+        console.error("No se pudo actualizar la tasa BCV; se conserva la última disponible:", error);
+        var indicator = document.getElementById("exchange-rate");
+        if (indicator) {
+          indicator.classList.add("stale");
+          indicator.title = "No se pudo actualizar la tasa BCV. Se conserva la última disponible.";
+        }
+        return false;
+      })
+      .then(function (updated) {
+        window.clearTimeout(requestTimeout);
+        rateRequestInProgress = false;
+        return updated;
+      }, function (error) {
+        window.clearTimeout(requestTimeout);
+        rateRequestInProgress = false;
+        throw error;
+      });
+  };
+
+  app.initializeExchangeRate = function () {
+    app.updateExchangeRateDisplay();
+    app.refreshExchangeRate();
+    window.setInterval(app.refreshExchangeRate, RATE_REFRESH_INTERVAL);
+    window.addEventListener("focus", function () {
+      if (Date.now() - lastRateRequestAt > 5 * 60 * 1000) app.refreshExchangeRate();
+    });
   };
 
   app.inventoryType = function (product) {

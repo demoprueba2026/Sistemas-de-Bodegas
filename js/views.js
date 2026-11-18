@@ -153,7 +153,7 @@
       (total ? app.formatUsdInput(total) : "") + '"></div><p class="currency-rate-note">Tasa: 1 USD = ' + app.exchangeRate() +
       ' Bs.</p></div><div class="change" id="change-due"></div><button class="button primary" type="submit" ' +
       (!app.cart.length ? "disabled" : "") + '>Cobrar ' + app.esc(app.money(total)) +
-      ' <small class="button-usd">(' + app.esc(app.moneyUsd(total)) + ')</small> →</button></form></section></div>';
+      ' <small class="button-usd" data-bs-value="' + total + '">(' + app.esc(app.moneyUsd(total)) + ')</small> →</button></form></section></div>';
   };
 
   app.filteredSales = function (period) {

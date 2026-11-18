@@ -153,4 +153,5 @@
 
   app.loadTheme();
   app.render();
+  app.initializeExchangeRate();
 })(window.MercadoApp);
