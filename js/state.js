@@ -4,14 +4,14 @@
   var STORE_KEY = "mercado-admin-v1";
   var seed = {
     products: [
-      { id: "p1", barcode: "7501000110012", name: "Leche entera 1 L", category: "Lácteos", emoji: "🥛", cost: 18.5, price: 25, stock: 6, min: 8 },
-      { id: "p2", barcode: "7501000110029", name: "Pan de caja", category: "Panadería", emoji: "🍞", cost: 28, price: 39, stock: 14, min: 5 },
-      { id: "p3", barcode: "7501000110036", name: "Café molido 250 g", category: "Abarrotes", emoji: "☕", cost: 54, price: 74, stock: 22, min: 6 },
-      { id: "p4", barcode: "7501000110043", name: "Agua natural 1.5 L", category: "Bebidas", emoji: "💧", cost: 9, price: 15, stock: 4, min: 10 },
-      { id: "p5", barcode: "7501000110050", name: "Arroz 1 kg", category: "Abarrotes", emoji: "🍚", cost: 22, price: 31, stock: 32, min: 8 },
-      { id: "p6", barcode: "7501000110067", name: "Detergente 1 kg", category: "Limpieza", emoji: "🧼", cost: 39, price: 55, stock: 12, min: 4 },
-      { id: "p7", barcode: "7501000110074", name: "Yogur natural", category: "Lácteos", emoji: "🥣", cost: 12, price: 18, stock: 3, min: 6 },
-      { id: "p8", barcode: "7501000110081", name: "Manzana roja (kg)", category: "Frutas", emoji: "🍎", cost: 28, price: 42, stock: 18, min: 5 }
+      { id: "p1", barcode: "7501000110012", name: "Leche entera 1 L", category: "Lácteos", emoji: "🥛", cost: 17020, price: 23000, stock: 6, min: 8 },
+      { id: "p2", barcode: "7501000110029", name: "Pan de caja", category: "Panadería", emoji: "🍞", cost: 25760, price: 35880, stock: 14, min: 5 },
+      { id: "p3", barcode: "7501000110036", name: "Café molido 250 g", category: "Abarrotes", emoji: "☕", cost: 49680, price: 68080, stock: 22, min: 6 },
+      { id: "p4", barcode: "7501000110043", name: "Agua natural 1.5 L", category: "Bebidas", emoji: "💧", cost: 8280, price: 13800, stock: 4, min: 10 },
+      { id: "p5", barcode: "7501000110050", name: "Arroz 1 kg", category: "Abarrotes", emoji: "🍚", cost: 20240, price: 28520, stock: 32, min: 8 },
+      { id: "p6", barcode: "7501000110067", name: "Detergente 1 kg", category: "Limpieza", emoji: "🧼", cost: 35880, price: 50600, stock: 12, min: 4 },
+      { id: "p7", barcode: "7501000110074", name: "Yogur natural", category: "Lácteos", emoji: "🥣", cost: 11040, price: 16560, stock: 3, min: 6 },
+      { id: "p8", barcode: "7501000110081", name: "Manzana roja (kg)", category: "Frutas", emoji: "🍎", cost: 25760, price: 38640, stock: 18, min: 5 }
     ],
     movements: [],
     sales: [],

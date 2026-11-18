@@ -3,6 +3,7 @@
 
   var toastTimer;
   var THEME_KEY = "mercado-theme";
+  var BCV_RATE = 920;
 
   app.esc = function (value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, function (char) {
@@ -12,6 +13,51 @@
 
   app.money = function (value) {
     return new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(Number(value) || 0);
+  };
+
+  app.moneyUsd = function (bolivares) {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })
+      .format((Number(bolivares) || 0) / BCV_RATE);
+  };
+
+  app.moneyPair = function (bolivares) {
+    return '<span class="money-pair"><span>' + app.esc(app.money(bolivares)) +
+      '</span><small class="money-secondary">' + app.esc(app.moneyUsd(bolivares)) + '</small></span>';
+  };
+
+  app.formatBsInput = function (value) {
+    var amount = Number(value);
+    return Number.isFinite(amount) ? amount.toFixed(2) : "";
+  };
+
+  app.formatUsdInput = function (value) {
+    var amount = Number(value);
+    return Number.isFinite(amount) ? (amount / BCV_RATE).toFixed(2) : "";
+  };
+
+  app.syncCurrencyInput = function (input) {
+    var group = input.closest("[data-currency-group]");
+    if (!group) return;
+    var bolivaresInput = group.querySelector('[data-currency-kind="bs"]');
+    var dollarsInput = group.querySelector('[data-currency-kind="usd"]');
+    if (!bolivaresInput || !dollarsInput) return;
+
+    if (input.value.trim() === "") {
+      (input.dataset.currencyKind === "bs" ? dollarsInput : bolivaresInput).value = "";
+      return;
+    }
+
+    var amount = Number(input.value);
+    if (!Number.isFinite(amount) || amount < 0) return;
+    if (input.dataset.currencyKind === "bs") {
+      dollarsInput.value = app.formatUsdInput(amount);
+    } else {
+      bolivaresInput.value = app.formatBsInput(amount * BCV_RATE);
+    }
+  };
+
+  app.exchangeRate = function () {
+    return BCV_RATE;
   };
 
   app.dateLabel = function (date) {

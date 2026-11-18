@@ -71,7 +71,10 @@
 
   document.addEventListener("input", function (event) {
     var inputId = event.target.id;
-    if (inputId === "inventory-search" || inputId === "pos-search") {
+    if (event.target.matches("[data-currency-kind]")) {
+      app.syncCurrencyInput(event.target);
+      if (event.target.closest("#cash-field")) app.updateChange();
+    } else if (inputId === "inventory-search" || inputId === "pos-search") {
       var cursor = event.target.selectionStart;
       app.searchTerm = event.target.value;
       app.render();
@@ -80,9 +83,7 @@
         replacement.focus();
         replacement.setSelectionRange(cursor, cursor);
       }
-    } else if (inputId === "cash-received") {
-      app.updateChange();
-    }
+    } else if (inputId === "cash-received") app.updateChange();
   });
 
   document.addEventListener("change", function (event) {

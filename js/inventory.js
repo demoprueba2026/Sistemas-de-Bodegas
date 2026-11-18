@@ -8,10 +8,11 @@
       '<div class="form-grid"><div class="field wide"><label for="prod-name">Nombre del producto *</label><input id="prod-name" name="name" required maxlength="80" placeholder="Ej. Leche entera 1 L"></div>' +
       '<div class="field"><label for="prod-barcode">Código de barras</label><input id="prod-barcode" name="barcode" maxlength="40" placeholder="Escanea o escribe"></div>' +
       '<div class="field"><label for="prod-category">Categoría</label><input id="prod-category" name="category" maxlength="40" placeholder="Abarrotes"></div>' +
-      '<div class="field"><label for="prod-cost">Precio de compra (Bs.S) *</label><input id="prod-cost" name="cost" required type="number" min="0" step="0.01" value="0"></div>' +
-      '<div class="field"><label for="prod-price">Precio de venta (Bs.S) *</label><input id="prod-price" name="price" required type="number" min="0" step="0.01" value="0"></div>' +
+      '<div class="currency-input-group" data-currency-group><div class="field"><label for="prod-cost-bs">Costo de compra (Bs.S) *</label><input id="prod-cost-bs" name="cost" data-currency-kind="bs" required type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="prod-cost-usd">Equivalente (USD)</label><input id="prod-cost-usd" data-currency-kind="usd" type="number" min="0" step="0.01" value="0"></div></div>' +
+      '<div class="currency-input-group" data-currency-group><div class="field"><label for="prod-price-bs">Precio de venta (Bs.S) *</label><input id="prod-price-bs" name="price" data-currency-kind="bs" required type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="prod-price-usd">Equivalente (USD)</label><input id="prod-price-usd" data-currency-kind="usd" type="number" min="0" step="0.01" value="0"></div></div>' +
       '<div class="field"><label for="prod-stock">Existencia inicial</label><input id="prod-stock" name="stock" type="number" min="0" step="1" value="0"></div>' +
-      '<div class="field"><label for="prod-min">Stock mínimo</label><input id="prod-min" name="min" type="number" min="0" step="1" value="5"></div></div>' +
+      '<div class="field"><label for="prod-min">Stock mínimo</label><input id="prod-min" name="min" type="number" min="0" step="1" value="5"></div>' +
+      '<p class="currency-rate-note">Conversión fija de referencia: 1 USD = ' + app.exchangeRate() + ' Bs.</p></div>' +
       '<div class="modal-actions"><button type="button" class="button" data-action="close-modal">Cancelar</button>' +
       '<button type="submit" class="button primary">Guardar producto</button></div></form></div>';
     document.getElementById("prod-name").focus();
@@ -99,9 +100,19 @@
   };
 
   app.exportCsv = function () {
-    var rows = [["Código", "Producto", "Categoría", "Costo (Bs.S)", "Precio (Bs.S)", "Existencia", "Mínimo"]];
+    var rows = [["Código", "Producto", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Existencia", "Mínimo"]];
     app.state.products.forEach(function (product) {
-      rows.push([product.barcode, product.name, product.category, product.cost, product.price, product.stock, product.min]);
+      rows.push([
+        product.barcode,
+        product.name,
+        product.category,
+        product.cost,
+        (product.cost / app.exchangeRate()).toFixed(2),
+        product.price,
+        (product.price / app.exchangeRate()).toFixed(2),
+        product.stock,
+        product.min
+      ]);
     });
     var csv = "\uFEFF" + rows.map(function (row) {
       return row.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(",");

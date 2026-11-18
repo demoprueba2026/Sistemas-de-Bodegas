@@ -34,9 +34,13 @@
     }, 0);
     var received = Number(document.getElementById("cash-received").value);
     var due = document.getElementById("change-due");
-    if (method === "Efectivo" && received >= total && total > 0) due.textContent = "Cambio: " + app.money(received - total);
-    else if (method === "Efectivo" && received > 0 && received < total) due.textContent = "Faltan: " + app.money(total - received);
-    else due.textContent = "";
+    if (method === "Efectivo" && received >= total && total > 0) {
+      due.innerHTML = "Cambio: " + app.moneyPair(received - total);
+    } else if (method === "Efectivo" && received > 0 && received < total) {
+      due.innerHTML = "Faltan: " + app.moneyPair(total - received);
+    } else {
+      due.textContent = "";
+    }
   };
 
   app.checkout = function (event) {
@@ -101,7 +105,7 @@
   app.showReceipt = function (sale) {
     var itemRows = sale.items.map(function (item) {
       return '<div class="receipt-line"><span>' + app.esc(item.quantity + " × " + item.name) +
-        '</span><span>' + app.esc(app.money(item.quantity * item.price)) + '</span></div>';
+        '</span><span>' + app.moneyPair(item.quantity * item.price) + '</span></div>';
     }).join("");
 
     document.getElementById("modal-root").innerHTML =
@@ -110,9 +114,9 @@
       '<div class="receipt-center">Gracias por tu compra</div><hr><div>Ticket: #' + app.esc(sale.receipt) +
       '</div><div>' + app.esc(new Intl.DateTimeFormat("es-VE", { dateStyle: "short", timeStyle: "short" }).format(new Date(sale.createdAt))) +
       '</div><hr>' + itemRows + '<hr><div class="receipt-line"><strong>TOTAL</strong><strong>' +
-      app.esc(app.money(sale.total)) + '</strong></div><div>Método de pago: ' + app.esc(sale.method) +
-      '</div>' + (sale.method === "Efectivo" ? '<div>Efectivo: ' + app.esc(app.money(sale.cash)) +
-      '</div><div>Cambio: ' + app.esc(app.money(sale.change)) + '</div>' : '') +
+      app.moneyPair(sale.total) + '</strong></div><div>Método de pago: ' + app.esc(sale.method) +
+      '</div>' + (sale.method === "Efectivo" ? '<div class="receipt-payment">Efectivo: ' + app.moneyPair(sale.cash) +
+      '</div><div class="receipt-payment">Cambio: ' + app.moneyPair(sale.change) + '</div>' : '') +
       '<hr><div class="receipt-center">¡Vuelve pronto!</div></div><div class="modal-actions">' +
       '<button class="button" data-action="close-modal">Cerrar</button>' +
       '<button class="button primary" data-action="print-receipt">Imprimir ticket</button></div></div></div>';

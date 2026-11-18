@@ -123,6 +123,22 @@
     .inventory-table th, .inventory-table td { padding-top: 13px; padding-bottom: 13px; }
     .inventory-table td { font-size: 12px; }
     .price { font-weight: 650; }
+    .money-pair { display: inline-grid; gap: 2px; line-height: 1.15; vertical-align: middle; }
+    .money-secondary { color: var(--muted); font-size: 10px; font-weight: 500; }
+    .stat-value .money-pair { gap: 4px; }
+    .stat-value .money-secondary { font-size: 11px; }
+    .pos-product-price .money-secondary { font-size: 10px; }
+    .cart-price .money-secondary { font-size: 9px; }
+    .summary-line .money-pair { text-align: right; }
+    .summary-line.total .money-secondary { font-size: 10px; }
+    .change .money-pair { display: inline-grid; text-align: right; vertical-align: middle; }
+    .button-usd { opacity: .85; font-size: 10px; }
+    .currency-input-group { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; min-width: 0; }
+    .currency-input-group .field { min-width: 0; }
+    .currency-rate-note { grid-column: 1 / -1; margin: -4px 0 0; color: var(--muted); font-size: 10px; }
+    .receipt-payment { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .receipt .money-pair { text-align: right; }
+    .receipt .money-secondary { font-size: 9px; }
     .muted { color: var(--muted); }
     .pos-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, .85fr); gap: 16px; align-items: start; }
     .pos-products { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 10px; }

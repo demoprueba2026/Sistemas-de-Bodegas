@@ -49,14 +49,14 @@ insert into public.products (
   owner_id, barcode, name, category, emoji, cost, price, stock, stock_min
 )
 values
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110012', 'Leche entera 1 L', 'Lácteos', '🥛', 18.50, 25.00, 6, 8),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110029', 'Pan de caja', 'Panadería', '🍞', 28.00, 39.00, 14, 5),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110036', 'Café molido 250 g', 'Abarrotes', '☕', 54.00, 74.00, 22, 6),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110043', 'Agua natural 1.5 L', 'Bebidas', '💧', 9.00, 15.00, 4, 10),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110050', 'Arroz 1 kg', 'Abarrotes', '🍚', 22.00, 31.00, 32, 8),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110067', 'Detergente 1 kg', 'Limpieza', '🧼', 39.00, 55.00, 12, 4),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110074', 'Yogur natural', 'Lácteos', '🥣', 12.00, 18.00, 3, 6),
-  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110081', 'Manzana roja (kg)', 'Frutas', '🍎', 28.00, 42.00, 18, 5)
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110012', 'Leche entera 1 L', 'Lácteos', '🥛', 17020.00, 23000.00, 6, 8),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110029', 'Pan de caja', 'Panadería', '🍞', 25760.00, 35880.00, 14, 5),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110036', 'Café molido 250 g', 'Abarrotes', '☕', 49680.00, 68080.00, 22, 6),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110043', 'Agua natural 1.5 L', 'Bebidas', '💧', 8280.00, 13800.00, 4, 10),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110050', 'Arroz 1 kg', 'Abarrotes', '🍚', 20240.00, 28520.00, 32, 8),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110067', 'Detergente 1 kg', 'Limpieza', '🧼', 35880.00, 50600.00, 12, 4),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110074', 'Yogur natural', 'Lácteos', '🥣', 11040.00, 16560.00, 3, 6),
+  ('fd9346a2-07f2-4ef2-871f-5f7fdc619e93'::uuid, '7501000110081', 'Manzana roja (kg)', 'Frutas', '🍎', 25760.00, 38640.00, 18, 5)
 on conflict (owner_id, barcode) do nothing;
 
 alter table public.profiles enable row level security;
