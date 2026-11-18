@@ -122,6 +122,10 @@
     .pos-search { width: 100%; margin-bottom: 14px; }
     .inventory-table th, .inventory-table td { padding-top: 13px; padding-bottom: 13px; }
     .inventory-table td { font-size: 12px; }
+    .inventory-actions { display: flex; align-items: center; gap: 5px; }
+    .inventory-actions .button { padding: 7px 9px; white-space: nowrap; flex: 0 0 auto; }
+    .button.danger { color: var(--red); }
+    .button.danger:hover { border-color: var(--red); background: var(--red-pale); }
     .price { font-weight: 650; }
     .money-pair { display: inline-grid; gap: 2px; line-height: 1.15; vertical-align: middle; }
     .money-secondary { color: var(--muted); font-size: 10px; font-weight: 500; }
