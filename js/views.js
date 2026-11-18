@@ -98,7 +98,7 @@
       (inventorySection === "sale" ? "Productos para vender" : "Insumos para comidas") + '</div><div class="panel-subtitle">' +
       products.length + ' registros en esta sección</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar nombre, categoría o código..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar productos"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
-      '<div class="table-wrap"><table class="inventory-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Costo (Bs.S / USD)</th><th>Precio (Bs.S / USD)</th><th>Existencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' +
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Costo (Bs.S / USD)</th><th>Precio (Bs.S / USD)</th><th>Existencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Sugerencias de reabastecimiento</div><div class="panel-subtitle">Estimación para llevar cada producto al doble del mínimo</div></div><span class="status low">' +
       alerts.length + ' alertas</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
   };

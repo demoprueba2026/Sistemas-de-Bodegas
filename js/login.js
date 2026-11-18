@@ -7,7 +7,7 @@
       document.documentElement.dataset.theme = theme;
       document.querySelector('meta[name="theme-color"]').setAttribute(
         "content",
-        theme === "dark" ? "#111915" : "#f5f7f5"
+        theme === "dark" ? "#101914" : "#f3f7f3"
       );
     }
   } catch (error) {

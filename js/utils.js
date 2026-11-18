@@ -104,7 +104,7 @@
     button.setAttribute("aria-label", activeTheme === "dark" ? "Activar modo claro" : "Activar modo oscuro");
     button.setAttribute("aria-pressed", activeTheme === "dark" ? "true" : "false");
     button.title = activeTheme === "dark" ? "Activar modo claro" : "Activar modo oscuro";
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", activeTheme === "dark" ? "#111915" : "#f5f7f5");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", activeTheme === "dark" ? "#101914" : "#f3f7f3");
   };
 
   app.loadTheme = function () {
