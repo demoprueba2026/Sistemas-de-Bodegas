@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f5f7f5">
   <title>Mercado — Administración</title>
+  <script src="js/auth.js" data-guard="protected"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,6 +38,7 @@
         <div class="top-actions">
           <span class="today" id="today"></span>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false" title="Activar modo oscuro">☾</button>
+          <button class="logout-button" id="logout-button" type="button" aria-label="Cerrar sesión" title="Cerrar sesión"><span aria-hidden="true">↪</span><span class="logout-label">Salir</span></button>
           <button class="avatar" title="Usuario administrador">AD</button>
         </div>
       </header>

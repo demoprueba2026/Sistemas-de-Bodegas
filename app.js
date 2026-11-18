@@ -1,6 +1,11 @@
 (function (app) {
   "use strict";
 
+  if (!window.MercadoAuth || !window.MercadoAuth.isAuthenticated()) {
+    window.location.replace("login.html");
+    return;
+  }
+
   var pageNames = {
     dashboard: "Resumen",
     pos: "Punto de venta",
@@ -97,6 +102,10 @@
   document.getElementById("theme-toggle").addEventListener("click", function () {
     var nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     app.saveTheme(nextTheme);
+  });
+
+  document.getElementById("logout-button").addEventListener("click", function () {
+    window.MercadoAuth.logout();
   });
 
   document.addEventListener("keydown", function (event) {
