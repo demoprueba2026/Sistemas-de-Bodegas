@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7f5">
+  <title>Mercado — Administración</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">m</div>
+        <div><span class="brand-name">mercado</span><span class="brand-sub">PANEL DE ADMINISTRACIÓN</span></div>
+      </div>
+      <div>
+        <div class="nav-label">MENÚ PRINCIPAL</div>
+        <nav class="nav" aria-label="Navegación principal">
+          <button class="active" data-page="dashboard"><span class="nav-icon">⌂</span> Resumen</button>
+          <button data-page="pos"><span class="nav-icon">▣</span> Punto de venta</button>
+          <button data-page="inventory"><span class="nav-icon">▤</span> Inventario <span class="nav-count" id="nav-alert-count">0</span></button>
+          <button data-page="reports"><span class="nav-icon">▥</span> Reportes</button>
+        </nav>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="nav-label">TIENDA</div>
+        <div class="store-card"><div class="store-avatar">M</div><div><div class="store-title">Mi Mercado</div><div class="store-caption">Sucursal principal</div></div></div>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="topbar-leading">
+          <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menú">☰</button>
+          <div class="breadcrumb">Tienda <strong id="breadcrumb">Resumen</strong></div>
+        </div>
+        <div class="top-actions">
+          <span class="today" id="today"></span>
+          <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false" title="Activar modo oscuro">☾</button>
+          <button class="avatar" title="Usuario administrador">AD</button>
+        </div>
+      </header>
+      <div class="content" id="content"></div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div id="modal-root"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
