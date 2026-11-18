@@ -53,6 +53,14 @@
       return;
     }
 
+    var inventoryTab = event.target.closest("[data-inventory-section]");
+    if (inventoryTab) {
+      app.inventorySection = inventoryTab.dataset.inventorySection === "ingredient" ? "ingredient" : "sale";
+      app.searchTerm = "";
+      app.render();
+      return;
+    }
+
     var actionButton = event.target.closest("[data-action]");
     if (!actionButton) return;
     var action = actionButton.dataset.action;
@@ -115,11 +123,12 @@
       event.preventDefault();
       var barcode = event.target.value.trim();
       var exact = app.state.products.find(function (product) {
-        return product.barcode === barcode && product.stock > 0;
+        return app.inventoryType(product) === "sale" && product.barcode === barcode && product.stock > 0;
       });
       var matches = app.state.products.filter(function (product) {
         var searchable = product.name + " " + product.barcode + " " + product.category;
-        return searchable.toLowerCase().indexOf(barcode.toLowerCase()) !== -1 && product.stock > 0;
+        return app.inventoryType(product) === "sale" &&
+          searchable.toLowerCase().indexOf(barcode.toLowerCase()) !== -1 && product.stock > 0;
       });
 
       if (exact || matches.length === 1) {

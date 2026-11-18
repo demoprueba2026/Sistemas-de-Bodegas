@@ -59,8 +59,10 @@
   app.renderInventory = function () {
     var state = app.state;
     var query = app.searchTerm.toLowerCase();
+    var inventorySection = app.inventorySection === "ingredient" ? "ingredient" : "sale";
     var products = state.products.filter(function (product) {
-      return (product.name + " " + product.barcode + " " + product.category).toLowerCase().indexOf(query) !== -1;
+      return app.inventoryType(product) === inventorySection &&
+        (product.name + " " + product.barcode + " " + product.category).toLowerCase().indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
       return '<tr><td>' + app.productCell(product) + '</td><td>' + app.esc(product.category) +
@@ -70,7 +72,11 @@
         '</td><td><button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">＋ Entrada</button></td></tr>';
     }).join("") : '<tr><td colspan="7" class="empty">No se encontraron productos.</td></tr>';
 
-    var alerts = app.stockAlerts();
+    var saleCount = state.products.filter(function (product) { return app.inventoryType(product) === "sale"; }).length;
+    var ingredientCount = state.products.length - saleCount;
+    var alerts = app.stockAlerts().filter(function (product) {
+      return app.inventoryType(product) === inventorySection;
+    });
     var alertContent = alerts.length ? alerts.map(function (product) {
       var suggested = Math.max(product.min * 2 - product.stock, 0);
       return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") +
@@ -79,9 +85,15 @@
         ' uds.</div></div><button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">Reponer</button></div>';
     }).join("") : '<div class="empty">No hay productos por reabastecer.</div>';
 
-    return app.pageHeading("Inventario", "Controla existencias, costos y niveles de reabastecimiento.", '<button class="button primary" data-action="add-product">＋ Nuevo producto</button>') +
-      '<div class="page-grid"><section class="panel"><div class="panel-heading"><div><div class="panel-title">Productos</div><div class="panel-subtitle">' +
-      state.products.length + ' productos registrados</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar nombre, categoría o código..." value="' +
+    return app.pageHeading("Inventario", "Controla por separado los productos listos para vender y los insumos de preparación.", '<button class="button primary" data-action="add-product">＋ Nuevo producto</button>') +
+      '<div class="period-tabs inventory-section-tabs" role="tablist" aria-label="Secciones del inventario"><button type="button" role="tab" aria-selected="' +
+      (inventorySection === "sale" ? "true" : "false") + '" data-inventory-section="sale" class="' + (inventorySection === "sale" ? "active" : "") +
+      '">Productos para vender (' + saleCount + ')</button><button type="button" role="tab" aria-selected="' +
+      (inventorySection === "ingredient" ? "true" : "false") + '" data-inventory-section="ingredient" class="' + (inventorySection === "ingredient" ? "active" : "") +
+      '">Insumos para comidas (' + ingredientCount + ')</button></div><p class="subtitle inventory-help">Las comidas ya preparadas, como empanadas, van en “Productos para vender”. Los ingredientes y materiales van en “Insumos para comidas”.</p>' +
+      '<div class="page-grid"><section class="panel"><div class="panel-heading"><div><div class="panel-title">' +
+      (inventorySection === "sale" ? "Productos para vender" : "Insumos para comidas") + '</div><div class="panel-subtitle">' +
+      products.length + ' registros en esta sección</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar nombre, categoría o código..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar productos"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
       '<div class="table-wrap"><table class="inventory-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Costo (Bs.S / USD)</th><th>Precio (Bs.S / USD)</th><th>Existencia</th><th>Estado</th><th>Acción</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Sugerencias de reabastecimiento</div><div class="panel-subtitle">Estimación para llevar cada producto al doble del mínimo</div></div><span class="status low">' +
@@ -92,7 +104,8 @@
     var state = app.state;
     var query = app.searchTerm.toLowerCase();
     var products = state.products.filter(function (product) {
-      return (product.name + " " + product.barcode + " " + product.category).toLowerCase().indexOf(query) !== -1;
+      return app.inventoryType(product) === "sale" &&
+        (product.name + " " + product.barcode + " " + product.category).toLowerCase().indexOf(query) !== -1;
     });
     var cards = products.map(function (product) {
       return '<button class="pos-product" data-action="add-cart" data-id="' + app.esc(product.id) + '" ' +

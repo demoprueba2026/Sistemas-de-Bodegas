@@ -8,6 +8,9 @@
       '<div class="form-grid"><div class="field wide"><label for="prod-name">Nombre del producto *</label><input id="prod-name" name="name" required maxlength="80" placeholder="Ej. Leche entera 1 L"></div>' +
       '<div class="field"><label for="prod-barcode">Código de barras</label><input id="prod-barcode" name="barcode" maxlength="40" placeholder="Escanea o escribe"></div>' +
       '<div class="field"><label for="prod-category">Categoría</label><input id="prod-category" name="category" maxlength="40" placeholder="Abarrotes"></div>' +
+      '<div class="field wide"><label for="prod-type">Sección del inventario</label><select id="prod-type" name="inventoryType"><option value="sale"' +
+      (app.inventorySection === "sale" ? " selected" : "") + '>Producto para vender (incluye comidas ya preparadas)</option><option value="ingredient"' +
+      (app.inventorySection === "ingredient" ? " selected" : "") + '>Insumo para preparar comidas</option></select></div>' +
       '<div class="currency-input-group" data-currency-group><div class="field"><label for="prod-cost-bs">Costo de compra (Bs.S) *</label><input id="prod-cost-bs" name="cost" data-currency-kind="bs" required type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="prod-cost-usd">Equivalente (USD)</label><input id="prod-cost-usd" data-currency-kind="usd" type="number" min="0" step="0.01" value="0"></div></div>' +
       '<div class="currency-input-group" data-currency-group><div class="field"><label for="prod-price-bs">Precio de venta (Bs.S) *</label><input id="prod-price-bs" name="price" data-currency-kind="bs" required type="number" min="0" step="0.01" value="0"></div><div class="field"><label for="prod-price-usd">Equivalente (USD)</label><input id="prod-price-usd" data-currency-kind="usd" type="number" min="0" step="0.01" value="0"></div></div>' +
       '<div class="field"><label for="prod-stock">Existencia inicial</label><input id="prod-stock" name="stock" type="number" min="0" step="1" value="0"></div>' +
@@ -45,6 +48,7 @@
       barcode: barcode || "SIN-COD-" + Date.now(),
       name: String(data.get("name")).trim(),
       category: String(data.get("category") || "").trim() || "Sin categoría",
+      inventoryType: data.get("inventoryType") === "ingredient" ? "ingredient" : "sale",
       emoji: "📦",
       cost: Number(data.get("cost")),
       price: Number(data.get("price")),
@@ -100,11 +104,12 @@
   };
 
   app.exportCsv = function () {
-    var rows = [["Código", "Producto", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Existencia", "Mínimo"]];
+    var rows = [["Código", "Producto", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Existencia", "Mínimo"]];
     app.state.products.forEach(function (product) {
       rows.push([
         product.barcode,
         product.name,
+        app.inventoryTypeLabel(product),
         product.category,
         product.cost,
         (product.cost / app.exchangeRate()).toFixed(2),

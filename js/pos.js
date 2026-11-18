@@ -3,6 +3,10 @@
 
   app.addToCart = function (id) {
     var product = app.state.products.find(function (item) { return item.id === id; });
+    if (product && app.inventoryType(product) === "ingredient") {
+      app.notify("Los insumos no se pueden cobrar desde el punto de venta.");
+      return;
+    }
     if (!product || product.stock <= 0) { app.notify("Este producto no tiene existencias."); return; }
     var item = app.cart.find(function (row) { return row.id === id; });
     if (item && item.quantity >= product.stock) { app.notify("No hay más unidades disponibles."); return; }
@@ -53,7 +57,7 @@
 
     for (var i = 0; i < app.cart.length; i++) {
       var product = app.state.products.find(function (p) { return p.id === app.cart[i].id; });
-      if (!product || product.stock < app.cart[i].quantity) {
+      if (!product || app.inventoryType(product) === "ingredient" || product.stock < app.cart[i].quantity) {
         app.notify("El inventario cambió. Revisa la venta antes de cobrar.");
         app.render();
         return;

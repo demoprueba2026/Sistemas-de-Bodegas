@@ -60,6 +60,14 @@
     return BCV_RATE;
   };
 
+  app.inventoryType = function (product) {
+    return product.inventoryType === "ingredient" ? "ingredient" : "sale";
+  };
+
+  app.inventoryTypeLabel = function (product) {
+    return app.inventoryType(product) === "ingredient" ? "Insumo para comidas" : "Producto para vender";
+  };
+
   app.dateLabel = function (date) {
     return new Intl.DateTimeFormat("es-VE", { day: "2-digit", month: "short" }).format(new Date(date));
   };
