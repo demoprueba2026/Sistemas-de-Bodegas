@@ -67,18 +67,18 @@
           .toLowerCase().indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
-      return '<tr><td>' + app.esc(product.barcode) + '</td><td><div class="inventory-description">' +
+      return '<tr><td data-label="SKU">' + app.esc(product.barcode) + '</td><td data-label="Descripción"><div class="inventory-description">' +
         app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
-        '</div></td><td>' + app.esc(product.container || "—") + '</td><td>' +
-        app.esc(product.location || "—") + '</td><td>' + app.esc(product.unit || "Unidad") +
-        '</td><td class="inventory-quantity">' + product.stock + ' <small>/ mín. ' + product.min +
-        '</small></td><td class="price">' + app.moneyPair(product.cost) + '</td><td class="price">' +
-        app.moneyPair(product.price) + '</td><td>' + app.stateTag(product) +
-        '</td><td><div class="inventory-actions"><button class="button small" data-action="stock" data-id="' + app.esc(product.id) +
+        '</div></td><td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="Ubicación">' +
+        app.esc(product.location || "—") + '</td><td data-label="Unidad">' + app.esc(product.unit || "Unidad") +
+        '</td><td data-label="Cantidad"><div class="inventory-quantity">' + product.stock + ' <small>/ mín. ' + product.min +
+        '</small></div>' + app.stateTag(product) + '</td><td data-label="Costo y precio"><div class="inventory-finances"><div><span>Costo</span>' +
+        app.moneyPair(product.cost) + '</div><div><span>Venta</span>' + app.moneyPair(product.price) +
+        '</div></div></td><td data-label="Acciones"><div class="inventory-actions"><button class="button small" data-action="stock" data-id="' + app.esc(product.id) +
         '">＋ Entrada</button><button class="button small" data-action="edit-product" data-id="' + app.esc(product.id) +
         '" aria-label="Editar ' + app.esc(product.name) + '">Editar</button><button class="button small danger" data-action="delete-product" data-id="' +
         app.esc(product.id) + '" aria-label="Eliminar ' + app.esc(product.name) + '">Eliminar</button></div></td></tr>';
-    }).join("") : '<tr><td colspan="10" class="empty">No se encontraron productos.</td></tr>';
+    }).join("") : '<tr><td colspan="8" class="empty">No se encontraron productos.</td></tr>';
 
     var sectionProducts = state.products.filter(function (product) {
       return app.inventoryType(product) === inventorySection;
@@ -115,7 +115,7 @@
       (inventorySection === "sale" ? "Productos para vender" : "Insumos para comidas") + '</div><div class="panel-subtitle">' +
       products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar SKU, descripción, contenedor o ubicación..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar productos"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
-      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><thead><tr><th>SKU</th><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant.</th><th>Costo unitario</th><th>Precio de venta</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' +
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-sku"><col class="inventory-col-description"><col class="inventory-col-container"><col class="inventory-col-location"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>SKU</th><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant. / estado</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Sugerencias de reabastecimiento</div><div class="panel-subtitle">Estimación para llevar cada producto al doble del mínimo</div></div><span class="status low">' +
       alerts.length + ' alertas</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
   };
