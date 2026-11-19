@@ -15,6 +15,12 @@
       app.esc(product ? product.barcode : "") + '"></div>' +
       '<div class="field"><label for="prod-category">Categoría</label><input id="prod-category" name="category" maxlength="40" placeholder="Abarrotes" value="' +
       app.esc(product ? product.category : "") + '"></div>' +
+      '<div class="field"><label for="prod-container">N.º de contenedor</label><input id="prod-container" name="container" maxlength="40" placeholder="Ej. T345" value="' +
+      app.esc(product ? product.container || "" : "") + '"></div>' +
+      '<div class="field"><label for="prod-location">Ubicación</label><input id="prod-location" name="location" maxlength="80" placeholder="Ej. Fila 2, espacio 1" value="' +
+      app.esc(product ? product.location || "" : "") + '"></div>' +
+      '<div class="field"><label for="prod-unit">Unidad</label><input id="prod-unit" name="unit" maxlength="30" placeholder="Unidad, caja, kg..." value="' +
+      app.esc(product ? product.unit || "Unidad" : "Unidad") + '"></div>' +
       '<div class="field wide"><label for="prod-type">Sección del inventario</label><select id="prod-type" name="inventoryType"><option value="sale"' +
       (app.inventoryType(product || { inventoryType: app.inventorySection }) === "sale" ? " selected" : "") + '>Producto para vender (incluye comidas ya preparadas)</option><option value="ingredient"' +
       (app.inventoryType(product || { inventoryType: app.inventorySection }) === "ingredient" ? " selected" : "") + '>Insumo para preparar comidas</option></select></div>' +
@@ -79,6 +85,9 @@
       barcode: barcode || (existingProduct ? existingProduct.barcode : "SIN-COD-" + Date.now()),
       name: name,
       category: String(data.get("category") || "").trim() || "Sin categoría",
+      container: String(data.get("container") || "").trim(),
+      location: String(data.get("location") || "").trim(),
+      unit: String(data.get("unit") || "").trim() || "Unidad",
       inventoryType: data.get("inventoryType") === "ingredient" ? "ingredient" : "sale",
       cost: cost,
       price: price,
@@ -117,6 +126,9 @@
       emoji: "📦",
       name: updatedValues.name,
       category: updatedValues.category,
+      container: updatedValues.container,
+      location: updatedValues.location,
+      unit: updatedValues.unit,
       inventoryType: updatedValues.inventoryType,
       cost: updatedValues.cost,
       price: updatedValues.price,
@@ -173,24 +185,28 @@
 
     app.state.products = app.state.products.filter(function (item) { return item.id !== id; });
     app.cart = app.cart.filter(function (item) { return item.id !== id; });
+    app.inventorySelectionIds = (app.inventorySelectionIds || []).filter(function (itemId) { return itemId !== id; });
     app.saveState();
     app.render();
     app.notify("Producto eliminado del inventario.");
   };
 
   app.exportCsv = function () {
-    var rows = [["Código", "Producto", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Existencia", "Mínimo"]];
+    var rows = [["SKU", "Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Mínimo"]];
     app.state.products.forEach(function (product) {
       rows.push([
         product.barcode,
         product.name,
+        product.container || "",
+        product.location || "",
+        product.unit || "Unidad",
+        product.stock,
         app.inventoryTypeLabel(product),
         product.category,
         product.cost,
         (product.cost / app.exchangeRate()).toFixed(2),
         product.price,
         (product.price / app.exchangeRate()).toFixed(2),
-        product.stock,
         product.min
       ]);
     });
@@ -200,6 +216,87 @@
     var link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     link.download = "inventario-mercado.csv";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  app.openInventorySelection = function () {
+    app.inventorySelectionIds = app.inventorySelectionIds || [];
+    var products = app.state.products.filter(function (product) {
+      return app.inventoryType(product) === app.inventorySection;
+    });
+    var selected = products.filter(function (product) {
+      return app.inventorySelectionIds.indexOf(product.id) !== -1;
+    }).length;
+    var rows = products.length ? products.map(function (product) {
+      var isSelected = app.inventorySelectionIds.indexOf(product.id) !== -1;
+      return '<tr><td><input type="checkbox" data-action="toggle-inventory-selection" data-id="' + app.esc(product.id) +
+        '" aria-label="Seleccionar ' + app.esc(product.name) + '"' + (isSelected ? " checked" : "") + '></td><td>' +
+        app.esc(product.barcode) + '</td><td>' + app.esc(product.name) + '</td><td>' + app.esc(product.container || "—") +
+        '</td><td>' + app.esc(product.location || "—") + '</td><td>' + app.esc(product.unit || "Unidad") +
+        '</td><td>' + product.stock + '</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="empty">No hay productos en esta sección.</td></tr>';
+    document.getElementById("modal-root").innerHTML =
+      '<div class="modal-backdrop" id="inventory-selection-backdrop"><section class="modal inventory-modal">' +
+      '<div class="modal-head"><div><h2>Lista de selección de inventario</h2><p class="subtitle">Marca los artículos que necesitas incluir en la selección.</p></div>' +
+      '<button type="button" class="close-button" data-action="close-modal" aria-label="Cerrar">×</button></div>' +
+      '<div class="table-wrap inventory-modal-table"><table><thead><tr><th></th><th>SKU</th><th>Descripción</th><th>Contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant.</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div><div class="modal-actions"><span class="muted inventory-selection-count">' + selected +
+      ' artículos seleccionados</span><button type="button" class="button" data-action="clear-inventory-selection">Limpiar</button>' +
+      '<button type="button" class="button primary" data-action="export-selection"' + (selected ? "" : " disabled") +
+      '>Exportar selección</button></div></section></div>';
+  };
+
+  app.openContainerSearch = function () {
+    app.containerSearchTerm = "";
+    app.renderContainerSearch();
+  };
+
+  app.renderContainerSearch = function () {
+    var query = (app.containerSearchTerm || "").toLowerCase().trim();
+    var products = app.state.products.filter(function (product) {
+      return !query || (product.container + " " + product.location + " " + product.name + " " + product.barcode)
+        .toLowerCase().indexOf(query) !== -1;
+    });
+    var rows = products.length ? products.map(function (product) {
+      return '<tr><td>' + app.esc(product.container || "—") + '</td><td>' + app.esc(product.location || "—") +
+        '</td><td>' + app.esc(product.barcode) + '</td><td>' + app.esc(product.name) + '</td><td>' +
+        product.stock + ' ' + app.esc(product.unit || "Unidad") + '</td></tr>';
+    }).join("") : '<tr><td colspan="5" class="empty">No hay resultados para esa búsqueda.</td></tr>';
+    document.getElementById("modal-root").innerHTML =
+      '<div class="modal-backdrop" id="container-search-backdrop"><section class="modal inventory-modal">' +
+      '<div class="modal-head"><div><h2>Búsqueda de contenedores</h2><p class="subtitle">Busca por contenedor, ubicación, SKU o descripción.</p></div>' +
+      '<button type="button" class="close-button" data-action="close-modal" aria-label="Cerrar">×</button></div>' +
+      '<input class="search container-search" id="container-search" placeholder="Buscar contenedor o producto..." value="' +
+      app.esc(app.containerSearchTerm || "") + '" aria-label="Buscar contenedor o producto">' +
+      '<div class="table-wrap inventory-modal-table"><table><thead><tr><th>N.º de contenedor</th><th>Ubicación</th><th>SKU</th><th>Descripción</th><th>Cantidad</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div></section></div>';
+    var search = document.getElementById("container-search");
+    if (search) search.focus();
+  };
+
+  app.exportInventorySelection = function () {
+    app.inventorySelectionIds = app.inventorySelectionIds || [];
+    var selected = app.state.products.filter(function (product) {
+      return app.inventoryType(product) === app.inventorySection &&
+        app.inventorySelectionIds.indexOf(product.id) !== -1;
+    });
+    if (!selected.length) {
+      app.notify("Selecciona al menos un artículo para exportar.");
+      return;
+    }
+
+    var rows = [["SKU", "Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad"]];
+    selected.forEach(function (product) {
+      rows.push([product.barcode, product.name, product.container || "", product.location || "",
+        product.unit || "Unidad", product.stock]);
+    });
+    var csv = "\uFEFF" + rows.map(function (row) {
+      return row.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(",");
+    }).join("\r\n");
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    link.download = "seleccion-inventario.csv";
     link.click();
     URL.revokeObjectURL(link.href);
   };

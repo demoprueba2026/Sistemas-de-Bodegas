@@ -62,21 +62,35 @@
     var inventorySection = app.inventorySection === "ingredient" ? "ingredient" : "sale";
     var products = state.products.filter(function (product) {
       return app.inventoryType(product) === inventorySection &&
-        (product.name + " " + product.barcode + " " + product.category).toLowerCase().indexOf(query) !== -1;
+        (product.name + " " + product.barcode + " " + product.category + " " +
+          (product.container || "") + " " + (product.location || "") + " " + (product.unit || ""))
+          .toLowerCase().indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
-      return '<tr><td>' + app.productCell(product) + '</td><td>' + app.esc(product.category) +
-        '</td><td class="price">' + app.moneyPair(product.cost) + '</td><td class="price">' +
-        app.moneyPair(product.price) + '</td><td>' + product.stock + ' <span class="muted">/ mín. ' +
-        product.min + '</span></td><td>' + app.stateTag(product) +
+      return '<tr><td>' + app.esc(product.barcode) + '</td><td><div class="inventory-description">' +
+        app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
+        '</div></td><td>' + app.esc(product.container || "—") + '</td><td>' +
+        app.esc(product.location || "—") + '</td><td>' + app.esc(product.unit || "Unidad") +
+        '</td><td class="inventory-quantity">' + product.stock + ' <small>/ mín. ' + product.min +
+        '</small></td><td class="price">' + app.moneyPair(product.cost) + '</td><td class="price">' +
+        app.moneyPair(product.price) + '</td><td>' + app.stateTag(product) +
         '</td><td><div class="inventory-actions"><button class="button small" data-action="stock" data-id="' + app.esc(product.id) +
         '">＋ Entrada</button><button class="button small" data-action="edit-product" data-id="' + app.esc(product.id) +
         '" aria-label="Editar ' + app.esc(product.name) + '">Editar</button><button class="button small danger" data-action="delete-product" data-id="' +
         app.esc(product.id) + '" aria-label="Eliminar ' + app.esc(product.name) + '">Eliminar</button></div></td></tr>';
-    }).join("") : '<tr><td colspan="7" class="empty">No se encontraron productos.</td></tr>';
+    }).join("") : '<tr><td colspan="10" class="empty">No se encontraron productos.</td></tr>';
 
-    var saleCount = state.products.filter(function (product) { return app.inventoryType(product) === "sale"; }).length;
-    var ingredientCount = state.products.length - saleCount;
+    var sectionProducts = state.products.filter(function (product) {
+      return app.inventoryType(product) === inventorySection;
+    });
+    var containerIds = {};
+    sectionProducts.forEach(function (product) {
+      var container = String(product.container || "").trim();
+      if (container) containerIds[container.toLowerCase()] = true;
+    });
+    var inventoryValue = sectionProducts.reduce(function (sum, product) {
+      return sum + (Number(product.cost) || 0) * (Number(product.stock) || 0);
+    }, 0);
     var alerts = app.stockAlerts().filter(function (product) {
       return app.inventoryType(product) === inventorySection;
     });
@@ -88,17 +102,20 @@
         ' uds.</div></div><button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">Reponer</button></div>';
     }).join("") : '<div class="empty">No hay productos por reabastecer.</div>';
 
-    return app.pageHeading("Inventario", "Controla por separado los productos listos para vender y los insumos de preparación.", '<button class="button primary" data-action="add-product">＋ Nuevo producto</button>') +
+    return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta SKU, contenedor, ubicación y cantidades sin perder las herramientas de control.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
       '<div class="period-tabs inventory-section-tabs" role="tablist" aria-label="Secciones del inventario"><button type="button" role="tab" aria-selected="' +
       (inventorySection === "sale" ? "true" : "false") + '" data-inventory-section="sale" class="' + (inventorySection === "sale" ? "active" : "") +
-      '">Productos para vender (' + saleCount + ')</button><button type="button" role="tab" aria-selected="' +
+      '">Productos para vender (' + state.products.filter(function (product) { return app.inventoryType(product) === "sale"; }).length + ')</button><button type="button" role="tab" aria-selected="' +
       (inventorySection === "ingredient" ? "true" : "false") + '" data-inventory-section="ingredient" class="' + (inventorySection === "ingredient" ? "active" : "") +
-      '">Insumos para comidas (' + ingredientCount + ')</button></div><p class="subtitle inventory-help">Las comidas ya preparadas, como empanadas, van en “Productos para vender”. Los ingredientes y materiales van en “Insumos para comidas”.</p>' +
-      '<div class="page-grid"><section class="panel"><div class="panel-heading"><div><div class="panel-title">' +
+      '">Insumos para comidas (' + state.products.filter(function (product) { return app.inventoryType(product) === "ingredient"; }).length + ')</button></div>' +
+      '<section class="inventory-overview" aria-label="Resumen del inventario"><div class="inventory-total"><span>Valor total del inventario</span><strong>' +
+      app.moneyPair(inventoryValue) + '</strong></div><div><span>Artículos del inventario</span><strong>' + sectionProducts.length +
+      '</strong></div><div><span>Número de contenedores</span><strong>' + Object.keys(containerIds).length + '</strong></div></section>' +
+      '<div class="page-grid"><section class="panel inventory-board"><div class="panel-heading"><div><div class="panel-title">' +
       (inventorySection === "sale" ? "Productos para vender" : "Insumos para comidas") + '</div><div class="panel-subtitle">' +
-      products.length + ' registros en esta sección</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar nombre, categoría o código..." value="' +
+      products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar SKU, descripción, contenedor o ubicación..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar productos"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
-      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><thead><tr><th>Producto</th><th>Categoría</th><th>Costo (Bs.S / USD)</th><th>Precio (Bs.S / USD)</th><th>Existencia</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' +
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><thead><tr><th>SKU</th><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant.</th><th>Costo unitario</th><th>Precio de venta</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Sugerencias de reabastecimiento</div><div class="panel-subtitle">Estimación para llevar cada producto al doble del mínimo</div></div><span class="status low">' +
       alerts.length + ' alertas</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
   };

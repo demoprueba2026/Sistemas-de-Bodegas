@@ -69,6 +69,18 @@
     else if (action === "edit-product") app.openProductModal(actionButton.dataset.id);
     else if (action === "delete-product") app.deleteProduct(actionButton.dataset.id);
     else if (action === "stock") app.openStockModal(actionButton.dataset.id);
+    else if (action === "inventory-selection") app.openInventorySelection();
+    else if (action === "container-search") app.openContainerSearch();
+    else if (action === "toggle-inventory-selection") {
+      app.inventorySelectionIds = app.inventorySelectionIds || [];
+      var selectedIndex = app.inventorySelectionIds.indexOf(actionButton.dataset.id);
+      if (selectedIndex === -1) app.inventorySelectionIds.push(actionButton.dataset.id);
+      else app.inventorySelectionIds.splice(selectedIndex, 1);
+      app.openInventorySelection();
+    } else if (action === "clear-inventory-selection") {
+      app.inventorySelectionIds = [];
+      app.openInventorySelection();
+    } else if (action === "export-selection") app.exportInventorySelection();
     else if (action === "add-cart") app.addToCart(actionButton.dataset.id);
     else if (action === "qty") app.changeQuantity(actionButton.dataset.id, Number(actionButton.dataset.delta));
     else if (action === "clear-cart") {
@@ -84,6 +96,14 @@
     if (event.target.matches("[data-currency-kind]")) {
       app.syncCurrencyInput(event.target);
       if (event.target.closest("#cash-field")) app.updateChange();
+    } else if (inputId === "container-search") {
+      var containerCursor = event.target.selectionStart;
+      app.containerSearchTerm = event.target.value;
+      app.renderContainerSearch();
+      var containerReplacement = document.getElementById("container-search");
+      if (containerReplacement) {
+        containerReplacement.setSelectionRange(containerCursor, containerCursor);
+      }
     } else if (inputId === "inventory-search" || inputId === "pos-search") {
       var cursor = event.target.selectionStart;
       app.searchTerm = event.target.value;
