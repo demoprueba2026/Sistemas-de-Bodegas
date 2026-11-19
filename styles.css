@@ -47,8 +47,11 @@
     main { min-width: 0; }
     .topbar { height: 72px; background: var(--topbar-bg); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 34px; position: sticky; top: 0; z-index: 4; backdrop-filter: blur(16px); }
     .topbar-leading { display: flex; align-items: center; }
-    .breadcrumb { color: var(--muted); font-size: 12px; }
-    .breadcrumb strong { color: var(--ink); font-size: 13px; margin-left: 8px; }
+    .breadcrumb { min-width: 0; display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+    .breadcrumb-link { border: 0; padding: 3px 0; background: transparent; color: var(--muted); font-size: inherit; }
+    .breadcrumb-link:hover { color: var(--green-dark); text-decoration: underline; }
+    .breadcrumb-separator { color: #a0aaa5; font-size: 17px; }
+    .breadcrumb-current { min-width: 0; overflow: hidden; color: var(--ink); font-size: 14px; font-weight: 700; text-overflow: ellipsis; }
     .top-actions { display: flex; align-items: center; gap: 14px; }
     .today { color: var(--muted); font-size: 12px; }
     .exchange-rate { display: grid; grid-template-columns: auto auto; align-items: center; column-gap: 7px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); line-height: 1.2; }
@@ -316,6 +319,9 @@
       .inventory-overview { gap: 10px; padding: 12px; }
       .inventory-overview strong { font-size: 16px; }
       .top-actions .exchange-rate { display: none; }
+      .top-actions .avatar { display: none; }
+      .breadcrumb { max-width: 220px; gap: 5px; font-size: 11px; }
+      .breadcrumb-current { font-size: 12px; }
       .pos-products { grid-template-columns: repeat(2, minmax(0,1fr)); }
       .form-grid { grid-template-columns: 1fr; }
       .form-grid .wide { grid-column: auto; }

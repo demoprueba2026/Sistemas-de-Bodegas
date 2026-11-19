@@ -25,7 +25,18 @@
   };
 
   app.render = function () {
-    document.getElementById("breadcrumb").textContent = pageNames[app.page];
+    var breadcrumb = '<button type="button" class="breadcrumb-link" data-go="dashboard">Tienda</button>';
+    if (app.page === "inventory") {
+      breadcrumb += '<span class="breadcrumb-separator" aria-hidden="true">›</span>' +
+        '<button type="button" class="breadcrumb-link" data-page="inventory">Inventario</button>' +
+        '<span class="breadcrumb-separator" aria-hidden="true">›</span>' +
+        '<span class="breadcrumb-current" aria-current="page">' +
+        (app.inventorySection === "ingredient" ? "Insumos para comidas" : "Productos para vender") + '</span>';
+    } else {
+      breadcrumb += '<span class="breadcrumb-separator" aria-hidden="true">›</span>' +
+        '<span class="breadcrumb-current" aria-current="page">' + pageNames[app.page] + '</span>';
+    }
+    document.getElementById("breadcrumb-nav").innerHTML = breadcrumb;
     document.getElementById("nav-alert-count").textContent = app.stockAlerts().length;
     document.getElementById("today").textContent =
       new Intl.DateTimeFormat("es-VE", { weekday: "short", day: "numeric", month: "short" }).format(new Date());
