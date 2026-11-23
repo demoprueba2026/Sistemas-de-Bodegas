@@ -216,6 +216,8 @@
   };
 
   app.openInventorySelection = function () {
+    var previousTable = document.querySelector(".inventory-modal-table");
+    var previousScrollTop = previousTable ? previousTable.scrollTop : 0;
     app.inventorySelectionIds = app.inventorySelectionIds || [];
     var products = app.state.products.filter(function (product) {
       return app.inventoryType(product) === "sale";
@@ -240,6 +242,8 @@
       ' artículos seleccionados</span><button type="button" class="button" data-action="clear-inventory-selection">Limpiar</button>' +
       '<button type="button" class="button primary" data-action="export-selection"' + (selected ? "" : " disabled") +
       '>Exportar selección</button></div></section></div>';
+    var table = document.querySelector(".inventory-modal-table");
+    if (table) table.scrollTop = previousScrollTop;
   };
 
   app.openContainerSearch = function () {

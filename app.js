@@ -20,9 +20,57 @@
     document.querySelectorAll(".nav button").forEach(function (button) {
       button.classList.toggle("active", button.dataset.page === page);
     });
-    document.getElementById("sidebar").classList.remove("open");
+    closeMobileSidebar();
     app.render();
   };
+
+  var mobileMenu = document.getElementById("mobile-menu");
+  var sidebar = document.getElementById("sidebar");
+  var sidebarBackdrop = document.getElementById("sidebar-backdrop");
+
+  function setPageContentInert(isInert) {
+    document.getElementById("content").inert = isInert;
+    document.getElementById("breadcrumb-nav").inert = isInert;
+    document.querySelector(".top-actions").inert = isInert;
+  }
+
+  function closeMobileSidebar() {
+    var wasOpen = sidebar.classList.contains("open");
+    sidebar.classList.remove("open");
+    sidebar.inert = window.matchMedia("(max-width: 720px)").matches;
+    setPageContentInert(false);
+    mobileMenu.setAttribute("aria-expanded", "false");
+    mobileMenu.setAttribute("aria-label", "Abrir menú");
+    sidebarBackdrop.hidden = true;
+    if (wasOpen && window.matchMedia("(max-width: 720px)").matches) mobileMenu.focus();
+  }
+
+  function toggleMobileSidebar() {
+    var isOpen = sidebar.classList.toggle("open");
+    sidebar.inert = !isOpen;
+    setPageContentInert(isOpen);
+    mobileMenu.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    mobileMenu.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
+    sidebarBackdrop.hidden = !isOpen;
+    if (isOpen) sidebar.querySelector(".nav button").focus();
+  }
+
+  function syncSidebarForViewport() {
+    var isMobile = window.matchMedia("(max-width: 720px)").matches;
+    if (!isMobile) {
+      sidebar.classList.remove("open");
+      sidebar.inert = false;
+      setPageContentInert(false);
+      mobileMenu.setAttribute("aria-expanded", "false");
+      mobileMenu.setAttribute("aria-label", "Abrir menú");
+      sidebarBackdrop.hidden = true;
+    } else {
+      sidebar.inert = !sidebar.classList.contains("open");
+      setPageContentInert(sidebar.classList.contains("open"));
+    }
+  }
+  syncSidebarForViewport();
+  window.addEventListener("resize", syncSidebarForViewport);
 
   app.render = function () {
     var breadcrumb = '<button type="button" class="breadcrumb-link" data-go="dashboard">Tienda</button>';
@@ -50,6 +98,11 @@
   };
 
   document.addEventListener("click", function (event) {
+    if (event.target.classList.contains("modal-backdrop") && !event.target.querySelector("form")) {
+      document.getElementById("modal-root").innerHTML = "";
+      return;
+    }
+
     var navButton = event.target.closest("[data-page]");
     if (navButton) { app.setPage(navButton.dataset.page); return; }
 
@@ -78,6 +131,11 @@
       if (selectedIndex === -1) app.inventorySelectionIds.push(actionButton.dataset.id);
       else app.inventorySelectionIds.splice(selectedIndex, 1);
       app.openInventorySelection();
+      Array.prototype.some.call(document.querySelectorAll('[data-action="toggle-inventory-selection"]'), function (checkbox) {
+        if (checkbox.dataset.id !== actionButton.dataset.id) return false;
+        checkbox.focus();
+        return true;
+      });
     } else if (action === "clear-inventory-selection") {
       app.inventorySelectionIds = [];
       app.openInventorySelection();
@@ -131,9 +189,8 @@
     else if (event.target.id === "stock-form") app.saveStock(event);
   });
 
-  document.getElementById("mobile-menu").addEventListener("click", function () {
-    document.getElementById("sidebar").classList.toggle("open");
-  });
+  mobileMenu.addEventListener("click", toggleMobileSidebar);
+  sidebarBackdrop.addEventListener("click", closeMobileSidebar);
 
   var sidebarToggle = document.getElementById("sidebar-toggle");
   var savedSidebarState = localStorage.getItem("mercado-sidebar-collapsed") === "true";
@@ -189,6 +246,9 @@
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") document.getElementById("modal-root").innerHTML = "";
     if (event.key === "Escape" && document.getElementById("account-menu")) closeAccountMenu();
+    if (event.key === "Escape" && sidebar.classList.contains("open")) {
+      closeMobileSidebar();
+    }
     if (app.page === "pos" && event.key === "Enter" && event.target.id === "pos-search") {
       event.preventDefault();
       var barcode = event.target.value.trim();
