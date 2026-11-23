@@ -28,17 +28,18 @@
     button { cursor: pointer; }
     .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); transition: grid-template-columns .2s ease; }
     .sidebar { position: relative; background: var(--surface); border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; gap: 30px; box-shadow: 8px 0 30px rgba(27, 55, 39, .025); transition: padding .2s ease; }
-    .sidebar-toggle { position: absolute; z-index: 7; right: -13px; top: 28px; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--muted); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(27,55,39,.12); font-size: 20px; line-height: 1; }
+    .sidebar-toggle { position: absolute; z-index: 7; right: -6px; top: 28px; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--muted); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(27,55,39,.12); font-size: 20px; line-height: 1; }
     .app.sidebar-collapsed { grid-template-columns: 72px minmax(0, 1fr); }
-    .app.sidebar-collapsed .sidebar { padding: 24px 12px; align-items: center; }
-    .app.sidebar-collapsed .brand { padding: 0; }
+    .app.sidebar-collapsed .sidebar { padding: 24px 8px 24px 4px; align-items: flex-end; }
+    .app.sidebar-collapsed .brand { width: 48px; padding: 0; justify-content: flex-end; margin-left: auto; }
     .app.sidebar-collapsed .brand > div:last-child,
     .app.sidebar-collapsed .nav-label,
     .app.sidebar-collapsed .store-card > div:last-child { display: none; }
-    .app.sidebar-collapsed .nav { gap: 8px; }
-    .app.sidebar-collapsed .nav button { width: 48px; height: 48px; justify-content: center; padding: 0; font-size: 0; gap: 0; }
+    .app.sidebar-collapsed .nav { width: 48px; margin-left: auto; gap: 8px; }
+    .app.sidebar-collapsed .nav button { position: relative; width: 48px; height: 48px; justify-content: center; padding: 0; font-size: 0; gap: 0; }
     .app.sidebar-collapsed .nav-icon { width: auto; font-size: 19px; }
-    .app.sidebar-collapsed .store-card { width: 48px; height: 48px; justify-content: center; padding: 0; }
+    .app.sidebar-collapsed .store-card { width: 48px; height: 48px; justify-content: center; padding: 0; margin-left: auto; }
+    .app.sidebar-collapsed .nav-count { position: absolute; right: 4px; top: 4px; display: grid; place-items: center; min-width: 16px; height: 16px; margin: 0; padding: 0 4px; border: 2px solid var(--surface); border-radius: 10px; font-size: 9px; line-height: 1; }
     .app.sidebar-collapsed .sidebar-toggle span { transform: rotate(180deg); display: block; }
     .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; }
     .brand-mark { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(145deg, #21a36e, #116747); color: #fff; font-size: 19px; font-weight: 800; box-shadow: 0 7px 16px rgba(21, 124, 88, .22); }
