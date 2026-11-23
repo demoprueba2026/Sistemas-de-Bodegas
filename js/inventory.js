@@ -21,9 +21,6 @@
       app.esc(product ? product.location || "" : "") + '"></div>' +
       '<div class="field"><label for="prod-unit">Unidad</label><input id="prod-unit" name="unit" maxlength="30" placeholder="Unidad, caja, kg..." value="' +
       app.esc(product ? product.unit || "Unidad" : "Unidad") + '"></div>' +
-      '<div class="field wide"><label for="prod-type">Sección del inventario</label><select id="prod-type" name="inventoryType"><option value="sale"' +
-      (app.inventoryType(product || { inventoryType: app.inventorySection }) === "sale" ? " selected" : "") + '>Producto para vender (incluye comidas ya preparadas)</option><option value="ingredient"' +
-      (app.inventoryType(product || { inventoryType: app.inventorySection }) === "ingredient" ? " selected" : "") + '>Insumo para preparar comidas</option></select></div>' +
       '<div class="currency-input-group" data-currency-group><div class="field"><label for="prod-cost-bs">Costo de compra (Bs.S) *</label><input id="prod-cost-bs" name="cost" data-currency-kind="bs" required type="number" min="0" step="0.01" value="' +
       app.formatBsInput(product ? product.cost : 0) + '"></div><div class="field"><label for="prod-cost-usd">Equivalente (USD)</label><input id="prod-cost-usd" data-currency-kind="usd" type="number" min="0" step="0.01" value="' +
       app.formatUsdInput(product ? product.cost : 0) + '"></div></div>' +
@@ -88,7 +85,7 @@
       container: String(data.get("container") || "").trim(),
       location: String(data.get("location") || "").trim(),
       unit: String(data.get("unit") || "").trim() || "Unidad",
-      inventoryType: data.get("inventoryType") === "ingredient" ? "ingredient" : "sale",
+      inventoryType: "sale",
       cost: cost,
       price: price,
       stock: stock,
@@ -100,9 +97,6 @@
       Object.keys(updatedValues).forEach(function (key) {
         existingProduct[key] = updatedValues[key];
       });
-      if (updatedValues.inventoryType === "ingredient") {
-        app.cart = app.cart.filter(function (item) { return item.id !== id; });
-      }
       if (stockChange !== 0) {
         app.state.movements.unshift({
           id: "m" + Date.now(),
@@ -193,7 +187,9 @@
 
   app.exportCsv = function () {
     var rows = [["Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Mínimo"]];
-    app.state.products.forEach(function (product) {
+    app.state.products.filter(function (product) {
+      return app.inventoryType(product) === "sale";
+    }).forEach(function (product) {
       rows.push([
         product.name,
         product.container || "",
@@ -222,7 +218,7 @@
   app.openInventorySelection = function () {
     app.inventorySelectionIds = app.inventorySelectionIds || [];
     var products = app.state.products.filter(function (product) {
-      return app.inventoryType(product) === app.inventorySection;
+      return app.inventoryType(product) === "sale";
     });
     var selected = products.filter(function (product) {
       return app.inventorySelectionIds.indexOf(product.id) !== -1;
@@ -254,8 +250,9 @@
   app.renderContainerSearch = function () {
     var query = (app.containerSearchTerm || "").toLowerCase().trim();
     var products = app.state.products.filter(function (product) {
-      return !query || (product.container + " " + product.location + " " + product.name + " " + product.barcode)
-        .toLowerCase().indexOf(query) !== -1;
+      return app.inventoryType(product) === "sale" &&
+        (!query || (String(product.container || "") + " " + String(product.location || "") + " " + product.name)
+          .toLowerCase().indexOf(query) !== -1);
     });
     var rows = products.length ? products.map(function (product) {
       return '<tr><td>' + app.esc(product.container || "—") + '</td><td>' + app.esc(product.location || "—") +
@@ -277,7 +274,7 @@
   app.exportInventorySelection = function () {
     app.inventorySelectionIds = app.inventorySelectionIds || [];
     var selected = app.state.products.filter(function (product) {
-      return app.inventoryType(product) === app.inventorySection &&
+      return app.inventoryType(product) === "sale" &&
         app.inventorySelectionIds.indexOf(product.id) !== -1;
     });
     if (!selected.length) {

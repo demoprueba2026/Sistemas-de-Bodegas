@@ -59,9 +59,8 @@
   app.renderInventory = function () {
     var state = app.state;
     var query = app.searchTerm.toLowerCase();
-    var inventorySection = app.inventorySection === "ingredient" ? "ingredient" : "sale";
     var products = state.products.filter(function (product) {
-      return app.inventoryType(product) === inventorySection &&
+      return app.inventoryType(product) === "sale" &&
         product.name.toLowerCase().indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
@@ -78,7 +77,7 @@
     }).join("") : '<tr><td colspan="7" class="empty">No se encontraron productos.</td></tr>';
 
     var sectionProducts = state.products.filter(function (product) {
-      return app.inventoryType(product) === inventorySection;
+      return app.inventoryType(product) === "sale";
     });
     var containerIds = {};
     sectionProducts.forEach(function (product) {
@@ -89,7 +88,7 @@
       return sum + (Number(product.cost) || 0) * (Number(product.stock) || 0);
     }, 0);
     var alerts = app.stockAlerts().filter(function (product) {
-      return app.inventoryType(product) === inventorySection;
+      return app.inventoryType(product) === "sale";
     });
     var alertContent = alerts.length ? alerts.map(function (product) {
       var suggested = Math.max(product.min * 2 - product.stock, 0);
@@ -100,16 +99,11 @@
     }).join("") : '<div class="empty">No hay productos por reabastecer.</div>';
 
     return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta contenedor, ubicación y cantidades de los productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
-      '<div class="period-tabs inventory-section-tabs" role="tablist" aria-label="Secciones del inventario"><button type="button" role="tab" aria-selected="' +
-      (inventorySection === "sale" ? "true" : "false") + '" data-inventory-section="sale" class="' + (inventorySection === "sale" ? "active" : "") +
-      '">Productos para vender (' + state.products.filter(function (product) { return app.inventoryType(product) === "sale"; }).length + ')</button><button type="button" role="tab" aria-selected="' +
-      (inventorySection === "ingredient" ? "true" : "false") + '" data-inventory-section="ingredient" class="' + (inventorySection === "ingredient" ? "active" : "") +
-      '">Insumos para comidas (' + state.products.filter(function (product) { return app.inventoryType(product) === "ingredient"; }).length + ')</button></div>' +
       '<section class="inventory-overview" aria-label="Resumen del inventario"><div class="inventory-total"><span>Valor total del inventario</span><strong>' +
       app.moneyPair(inventoryValue) + '</strong></div><div><span>Artículos del inventario</span><strong>' + sectionProducts.length +
       '</strong></div><div><span>Número de contenedores</span><strong>' + Object.keys(containerIds).length + '</strong></div></section>' +
       '<div class="page-grid"><section class="panel inventory-board"><div class="panel-heading"><div><div class="panel-title">' +
-      (inventorySection === "sale" ? "Productos para vender" : "Insumos para comidas") + '</div><div class="panel-subtitle">' +
+      'Productos para vender</div><div class="panel-subtitle">' +
       products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar por nombre del producto..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar por nombre del producto"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
       '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-container"><col class="inventory-col-location"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +

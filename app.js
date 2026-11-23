@@ -30,8 +30,7 @@
       breadcrumb += '<span class="breadcrumb-separator" aria-hidden="true">›</span>' +
         '<button type="button" class="breadcrumb-link" data-page="inventory">Inventario</button>' +
         '<span class="breadcrumb-separator" aria-hidden="true">›</span>' +
-        '<span class="breadcrumb-current" aria-current="page">' +
-        (app.inventorySection === "ingredient" ? "Insumos para comidas" : "Productos para vender") + '</span>';
+        '<span class="breadcrumb-current" aria-current="page">Productos para vender</span>';
     } else {
       breadcrumb += '<span class="breadcrumb-separator" aria-hidden="true">›</span>' +
         '<span class="breadcrumb-current" aria-current="page">' + pageNames[app.page] + '</span>';
@@ -60,14 +59,6 @@
     var periodButton = event.target.closest("[data-period]");
     if (periodButton) {
       app.reportPeriod = periodButton.dataset.period;
-      app.render();
-      return;
-    }
-
-    var inventoryTab = event.target.closest("[data-inventory-section]");
-    if (inventoryTab) {
-      app.inventorySection = inventoryTab.dataset.inventorySection === "ingredient" ? "ingredient" : "sale";
-      app.searchTerm = "";
       app.render();
       return;
     }

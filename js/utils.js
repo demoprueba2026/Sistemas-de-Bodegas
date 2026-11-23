@@ -198,7 +198,7 @@
   };
 
   app.inventoryTypeLabel = function (product) {
-    return app.inventoryType(product) === "ingredient" ? "Insumo para comidas" : "Producto para vender";
+    return "Producto para vender";
   };
 
   app.dateLabel = function (date) {
