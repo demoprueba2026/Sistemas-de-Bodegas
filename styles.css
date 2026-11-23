@@ -146,14 +146,13 @@
     .inventory-table th, .inventory-table td { padding-top: 13px; padding-bottom: 13px; }
     .inventory-table { width: 100%; min-width: 0; table-layout: fixed; }
     .inventory-table td { font-size: 14px; white-space: normal; overflow-wrap: anywhere; vertical-align: middle; }
-    .inventory-col-sku { width: 10%; }
-    .inventory-col-description { width: 18%; }
-    .inventory-col-container { width: 9%; }
-    .inventory-col-location { width: 12%; }
-    .inventory-col-unit { width: 7%; }
-    .inventory-col-quantity { width: 10%; }
-    .inventory-col-finance { width: 16%; }
-    .inventory-col-actions { width: 18%; }
+    .inventory-col-description { width: 21%; }
+    .inventory-col-container { width: 12%; }
+    .inventory-col-location { width: 15%; }
+    .inventory-col-unit { width: 9%; }
+    .inventory-col-quantity { width: 11%; }
+    .inventory-col-finance { width: 18%; }
+    .inventory-col-actions { width: 14%; }
     .inventory-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
     .inventory-actions .button { padding: 8px 9px; font-size: 12px; white-space: nowrap; flex: 0 0 auto; }
     .inventory-heading { align-items: center; }
@@ -291,7 +290,7 @@
       .inventory-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
       .inventory-table tbody td { display: grid; align-content: start; min-width: 0; padding: 0; border: 0; font-size: 15px; }
       .inventory-table tbody td::before { content: attr(data-label); display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
-      .inventory-table tbody td:nth-child(7), .inventory-table tbody td:nth-child(8) { grid-column: 1 / -1; }
+      .inventory-table tbody td:nth-child(6), .inventory-table tbody td:nth-child(7) { grid-column: 1 / -1; }
       .inventory-table tbody td.empty { display: block; grid-column: 1 / -1; padding: 20px 10px; }
       .inventory-table tbody td.empty::before { content: none; }
       .inventory-actions .button { padding: 9px 11px; font-size: 13px; }

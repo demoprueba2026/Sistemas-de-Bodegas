@@ -192,10 +192,9 @@
   };
 
   app.exportCsv = function () {
-    var rows = [["SKU", "Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Mínimo"]];
+    var rows = [["Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Mínimo"]];
     app.state.products.forEach(function (product) {
       rows.push([
-        product.barcode,
         product.name,
         product.container || "",
         product.location || "",
@@ -232,15 +231,15 @@
       var isSelected = app.inventorySelectionIds.indexOf(product.id) !== -1;
       return '<tr><td><input type="checkbox" data-action="toggle-inventory-selection" data-id="' + app.esc(product.id) +
         '" aria-label="Seleccionar ' + app.esc(product.name) + '"' + (isSelected ? " checked" : "") + '></td><td>' +
-        app.esc(product.barcode) + '</td><td>' + app.esc(product.name) + '</td><td>' + app.esc(product.container || "—") +
+        app.esc(product.name) + '</td><td>' + app.esc(product.container || "—") +
         '</td><td>' + app.esc(product.location || "—") + '</td><td>' + app.esc(product.unit || "Unidad") +
         '</td><td>' + product.stock + '</td></tr>';
-    }).join("") : '<tr><td colspan="7" class="empty">No hay productos en esta sección.</td></tr>';
+    }).join("") : '<tr><td colspan="6" class="empty">No hay productos en esta sección.</td></tr>';
     document.getElementById("modal-root").innerHTML =
       '<div class="modal-backdrop" id="inventory-selection-backdrop"><section class="modal inventory-modal">' +
       '<div class="modal-head"><div><h2>Lista de selección de inventario</h2><p class="subtitle">Marca los artículos que necesitas incluir en la selección.</p></div>' +
       '<button type="button" class="close-button" data-action="close-modal" aria-label="Cerrar">×</button></div>' +
-      '<div class="table-wrap inventory-modal-table"><table><thead><tr><th></th><th>SKU</th><th>Descripción</th><th>Contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant.</th></tr></thead><tbody>' +
+      '<div class="table-wrap inventory-modal-table"><table><thead><tr><th></th><th>Descripción</th><th>Contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant.</th></tr></thead><tbody>' +
       rows + '</tbody></table></div><div class="modal-actions"><span class="muted inventory-selection-count">' + selected +
       ' artículos seleccionados</span><button type="button" class="button" data-action="clear-inventory-selection">Limpiar</button>' +
       '<button type="button" class="button primary" data-action="export-selection"' + (selected ? "" : " disabled") +
@@ -260,16 +259,16 @@
     });
     var rows = products.length ? products.map(function (product) {
       return '<tr><td>' + app.esc(product.container || "—") + '</td><td>' + app.esc(product.location || "—") +
-        '</td><td>' + app.esc(product.barcode) + '</td><td>' + app.esc(product.name) + '</td><td>' +
+        '</td><td>' + app.esc(product.name) + '</td><td>' +
         product.stock + ' ' + app.esc(product.unit || "Unidad") + '</td></tr>';
-    }).join("") : '<tr><td colspan="5" class="empty">No hay resultados para esa búsqueda.</td></tr>';
+    }).join("") : '<tr><td colspan="4" class="empty">No hay resultados para esa búsqueda.</td></tr>';
     document.getElementById("modal-root").innerHTML =
       '<div class="modal-backdrop" id="container-search-backdrop"><section class="modal inventory-modal">' +
-      '<div class="modal-head"><div><h2>Búsqueda de contenedores</h2><p class="subtitle">Busca por contenedor, ubicación, SKU o descripción.</p></div>' +
+      '<div class="modal-head"><div><h2>Búsqueda de contenedores</h2><p class="subtitle">Busca por contenedor, ubicación o nombre del producto.</p></div>' +
       '<button type="button" class="close-button" data-action="close-modal" aria-label="Cerrar">×</button></div>' +
       '<input class="search container-search" id="container-search" placeholder="Buscar contenedor o producto..." value="' +
       app.esc(app.containerSearchTerm || "") + '" aria-label="Buscar contenedor o producto">' +
-      '<div class="table-wrap inventory-modal-table"><table><thead><tr><th>N.º de contenedor</th><th>Ubicación</th><th>SKU</th><th>Descripción</th><th>Cantidad</th></tr></thead><tbody>' +
+      '<div class="table-wrap inventory-modal-table"><table><thead><tr><th>N.º de contenedor</th><th>Ubicación</th><th>Descripción</th><th>Cantidad</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section></div>';
     var search = document.getElementById("container-search");
     if (search) search.focus();
@@ -286,9 +285,9 @@
       return;
     }
 
-    var rows = [["SKU", "Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad"]];
+    var rows = [["Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad"]];
     selected.forEach(function (product) {
-      rows.push([product.barcode, product.name, product.container || "", product.location || "",
+      rows.push([product.name, product.container || "", product.location || "",
         product.unit || "Unidad", product.stock]);
     });
     var csv = "\uFEFF" + rows.map(function (row) {

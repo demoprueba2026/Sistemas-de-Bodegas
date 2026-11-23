@@ -77,7 +77,6 @@
     var action = actionButton.dataset.action;
 
     if (action === "add-product") app.openProductModal();
-    else if (action === "edit-product") app.openProductModal(actionButton.dataset.id);
     else if (action === "delete-product") app.deleteProduct(actionButton.dataset.id);
     else if (action === "stock") app.openStockModal(actionButton.dataset.id);
     else if (action === "inventory-selection") app.openInventorySelection();

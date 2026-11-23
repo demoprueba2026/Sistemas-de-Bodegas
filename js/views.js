@@ -62,23 +62,20 @@
     var inventorySection = app.inventorySection === "ingredient" ? "ingredient" : "sale";
     var products = state.products.filter(function (product) {
       return app.inventoryType(product) === inventorySection &&
-        (product.name + " " + product.barcode + " " + product.category + " " +
-          (product.container || "") + " " + (product.location || "") + " " + (product.unit || ""))
-          .toLowerCase().indexOf(query) !== -1;
+        product.name.toLowerCase().indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
-      return '<tr><td data-label="SKU">' + app.esc(product.barcode) + '</td><td data-label="Descripción"><div class="inventory-description">' +
+      return '<tr><td data-label="Descripción"><div class="inventory-description">' +
         app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
         '</div></td><td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="Ubicación">' +
         app.esc(product.location || "—") + '</td><td data-label="Unidad">' + app.esc(product.unit || "Unidad") +
-        '</td><td data-label="Cantidad"><div class="inventory-quantity">' + product.stock + ' <small>/ mín. ' + product.min +
-        '</small></div>' + app.stateTag(product) + '</td><td data-label="Costo y precio"><div class="inventory-finances"><div><span>Costo</span>' +
+        '</td><td data-label="Cantidad"><div class="inventory-quantity">' + product.stock +
+        '</div></td><td data-label="Costo y precio"><div class="inventory-finances"><div><span>Costo</span>' +
         app.moneyPair(product.cost) + '</div><div><span>Venta</span>' + app.moneyPair(product.price) +
         '</div></div></td><td data-label="Acciones"><div class="inventory-actions"><button class="button small" data-action="stock" data-id="' + app.esc(product.id) +
-        '">＋ Entrada</button><button class="button small" data-action="edit-product" data-id="' + app.esc(product.id) +
-        '" aria-label="Editar ' + app.esc(product.name) + '">Editar</button><button class="button small danger" data-action="delete-product" data-id="' +
+        '">＋ Entrada</button><button class="button small danger" data-action="delete-product" data-id="' +
         app.esc(product.id) + '" aria-label="Eliminar ' + app.esc(product.name) + '">Eliminar</button></div></td></tr>';
-    }).join("") : '<tr><td colspan="8" class="empty">No se encontraron productos.</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="empty">No se encontraron productos.</td></tr>';
 
     var sectionProducts = state.products.filter(function (product) {
       return app.inventoryType(product) === inventorySection;
@@ -102,7 +99,7 @@
         ' uds.</div></div><button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">Reponer</button></div>';
     }).join("") : '<div class="empty">No hay productos por reabastecer.</div>';
 
-    return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta SKU, contenedor, ubicación y cantidades sin perder las herramientas de control.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
+    return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta contenedor, ubicación y cantidades de los productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
       '<div class="period-tabs inventory-section-tabs" role="tablist" aria-label="Secciones del inventario"><button type="button" role="tab" aria-selected="' +
       (inventorySection === "sale" ? "true" : "false") + '" data-inventory-section="sale" class="' + (inventorySection === "sale" ? "active" : "") +
       '">Productos para vender (' + state.products.filter(function (product) { return app.inventoryType(product) === "sale"; }).length + ')</button><button type="button" role="tab" aria-selected="' +
@@ -113,9 +110,9 @@
       '</strong></div><div><span>Número de contenedores</span><strong>' + Object.keys(containerIds).length + '</strong></div></section>' +
       '<div class="page-grid"><section class="panel inventory-board"><div class="panel-heading"><div><div class="panel-title">' +
       (inventorySection === "sale" ? "Productos para vender" : "Insumos para comidas") + '</div><div class="panel-subtitle">' +
-      products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar SKU, descripción, contenedor o ubicación..." value="' +
-      app.esc(app.searchTerm) + '" aria-label="Buscar productos"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
-      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-sku"><col class="inventory-col-description"><col class="inventory-col-container"><col class="inventory-col-location"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>SKU</th><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cant. / estado</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
+      products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar por nombre del producto..." value="' +
+      app.esc(app.searchTerm) + '" aria-label="Buscar por nombre del producto"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-container"><col class="inventory-col-location"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Sugerencias de reabastecimiento</div><div class="panel-subtitle">Estimación para llevar cada producto al doble del mínimo</div></div><span class="status low">' +
       alerts.length + ' alertas</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
   };
