@@ -61,6 +61,22 @@
         return { name: "Administrador", email: "admin@mercado.local" };
       });
     },
+    getSupabaseClient: function () {
+      if (!supabase) throw new Error("Supabase no está disponible. Recarga la página e inténtalo de nuevo.");
+      return supabase;
+    },
+    getCurrentUser: function () {
+      if (!supabase) return Promise.reject(new Error("Supabase no está disponible."));
+      return supabase.auth.getUser().then(function (result) {
+        if (result.error) throw result.error;
+        if (!result.data || !result.data.user) {
+          window.sessionStorage.removeItem(SESSION_KEY);
+          window.location.replace("login.html");
+          throw new Error("La sesión expiró. Inicia sesión nuevamente.");
+        }
+        return result.data.user;
+      });
+    },
     requestPasswordReset: function (email) {
       if (!supabase) return Promise.reject(new Error("Supabase no está disponible."));
       return supabase.auth.resetPasswordForEmail(email, {

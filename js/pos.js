@@ -48,12 +48,11 @@
     }
   };
 
-  app.checkout = function (event) {
+  app.checkout = async function (event) {
     event.preventDefault();
-    if (!app.cart.length) return;
+    if (!app.cart.length || app.isSavingSale) return;
     var method = document.getElementById("payment-method").value;
     var total = 0;
-    var profit = 0;
     var items = [];
 
     for (var i = 0; i < app.cart.length; i++) {
@@ -64,9 +63,9 @@
         return;
       }
       total += product.price * app.cart[i].quantity;
-      profit += (product.price - product.cost) * app.cart[i].quantity;
       items.push({
         productId: product.id,
+        product_id: product.id,
         name: product.name,
         quantity: app.cart[i].quantity,
         price: product.price,
@@ -77,40 +76,77 @@
     var cash = method === "Efectivo" ? Number(document.getElementById("cash-received").value) : total;
     if (!Number.isFinite(cash) || cash < total) { app.notify("El efectivo recibido no cubre el total."); return; }
 
-    var previousState = JSON.parse(JSON.stringify(app.state));
-    items.forEach(function (item) {
-      var product = app.state.products.find(function (p) { return p.id === item.productId; });
-      product.stock -= item.quantity;
-      app.state.movements.unshift({
-        id: "m" + Date.now() + Math.random().toString(16).slice(2),
-        productId: product.id,
-        productName: product.name,
-        type: "Salida por venta",
-        quantity: -item.quantity,
-        date: new Date().toISOString()
-      });
-    });
+    app.isSavingSale = true;
+    var submitButton = document.querySelector('#checkout-form [type="submit"]');
+    if (submitButton) submitButton.disabled = true;
 
-    var sale = {
-      receipt: app.state.nextReceipt++,
-      createdAt: new Date().toISOString(),
-      total: total,
-      profit: profit,
-      method: method,
-      cash: cash,
-      change: cash - total,
-      items: items
-    };
-    app.state.sales.push(sale);
-    if (!app.saveState()) {
-      app.state = previousState;
-      return;
+    try {
+      var result = await window.MercadoAuth.getSupabaseClient().rpc("register_sale", {
+        p_payment_method: method,
+        p_cash_received: cash,
+        p_items: items.map(function (item) {
+          return { product_id: item.product_id, quantity: item.quantity };
+        })
+      });
+      if (result.error) throw result.error;
+      var saved = Array.isArray(result.data) ? result.data[0] : result.data;
+      if (!saved || !saved.sale_id) throw new Error("Supabase no confirmó el registro de la venta.");
+
+      var sale = {
+        id: saved.sale_id,
+        receipt: saved.receipt,
+        createdAt: new Date().toISOString(),
+        total: Number(saved.total),
+        profit: Number(saved.profit),
+        method: method,
+        cash: cash,
+        change: Math.max(cash - Number(saved.total), 0),
+        items: items
+      };
+
+      app.cart.length = 0;
+      app.cashReceived = "";
+      app.paymentMethod = "Efectivo";
+      var refreshError = null;
+      try {
+        await app.reloadCloudData();
+        sale = app.state.sales.find(function (row) { return row.id === saved.sale_id; }) || sale;
+      } catch (error) {
+        refreshError = error;
+        console.error("La venta se guardó, pero no se pudo actualizar el estado desde Supabase:", error);
+        items.forEach(function (item) {
+          var product = app.state.products.find(function (row) { return row.id === item.productId; });
+          if (!product) return;
+          product.stock -= item.quantity;
+          app.state.movements.unshift({
+            id: "pending-refresh-" + Date.now() + Math.random().toString(16).slice(2),
+            productId: product.id,
+            productName: product.name,
+            type: "Salida por venta",
+            quantity: -item.quantity,
+            date: sale.createdAt
+          });
+        });
+        app.state.sales.push(sale);
+        app.saveState();
+      }
+
+      app.render();
+      app.showReceipt(sale);
+      if (refreshError) app.notify("Venta guardada en Supabase; recarga para actualizar el inventario.");
+    } catch (error) {
+      console.error("No se pudo registrar la venta en Supabase:", error);
+      try {
+        await app.reloadCloudData();
+        app.render();
+      } catch (refreshError) {
+        console.error("Tampoco se pudo actualizar el estado desde Supabase:", refreshError);
+      }
+      app.notify("No se pudo guardar la venta: " + (error.message || "Error de Supabase."));
+    } finally {
+      app.isSavingSale = false;
+      if (submitButton && document.body.contains(submitButton)) submitButton.disabled = false;
     }
-    app.cart.length = 0;
-    app.cashReceived = "";
-    app.paymentMethod = "Efectivo";
-    app.render();
-    app.showReceipt(sale);
   };
 
   app.showReceipt = function (sale) {

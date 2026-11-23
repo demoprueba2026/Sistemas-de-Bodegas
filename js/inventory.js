@@ -50,7 +50,7 @@
     document.getElementById("stock-quantity").focus();
   };
 
-  app.saveProduct = function (event) {
+  app.saveProduct = async function (event) {
     event.preventDefault();
     var data = new FormData(event.target);
     var id = event.target.dataset.id || "";
@@ -85,77 +85,58 @@
       container: String(data.get("container") || "").trim(),
       location: String(data.get("location") || "").trim(),
       unit: String(data.get("unit") || "").trim() || "Unidad",
-      inventoryType: "sale",
       cost: cost,
       price: price,
       stock: stock,
       min: min
     };
 
-    if (existingProduct) {
-      var previousState = JSON.parse(JSON.stringify(app.state));
-      var stockChange = updatedValues.stock - existingProduct.stock;
-      Object.keys(updatedValues).forEach(function (key) {
-        existingProduct[key] = updatedValues[key];
+    var submitButton = event.target.querySelector('[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    try {
+      var result = await window.MercadoAuth.getSupabaseClient().rpc("save_product", {
+        p_product_id: existingProduct ? existingProduct.id : null,
+        p_barcode: updatedValues.barcode,
+        p_name: updatedValues.name,
+        p_category: updatedValues.category,
+        p_emoji: existingProduct ? existingProduct.emoji || "📦" : "📦",
+        p_cost: updatedValues.cost,
+        p_price: updatedValues.price,
+        p_stock: updatedValues.stock,
+        p_stock_min: updatedValues.min,
+        p_container: updatedValues.container,
+        p_location: updatedValues.location,
+        p_unit: updatedValues.unit
       });
-      if (stockChange !== 0) {
-        app.state.movements.unshift({
-          id: "m" + Date.now(),
-          productId: existingProduct.id,
-          productName: existingProduct.name,
-          type: "Ajuste manual de inventario",
-          quantity: stockChange,
-          date: new Date().toISOString()
-        });
-      }
-      if (!app.saveState()) {
-        app.state = previousState;
-        return;
+      if (result.error) throw result.error;
+      var row = Array.isArray(result.data) ? result.data[0] : result.data;
+      if (!row) throw new Error("Supabase no devolvió el producto guardado.");
+
+      var savedProduct = app.mapSupabaseProduct(row);
+      var productIndex = app.state.products.findIndex(function (item) { return item.id === savedProduct.id; });
+      if (productIndex === -1) app.state.products.push(savedProduct);
+      else app.state.products[productIndex] = savedProduct;
+      app.saveState();
+
+      var refreshFailed = false;
+      try {
+        await app.reloadCloudData();
+      } catch (refreshError) {
+        refreshFailed = true;
+        console.error("El producto se guardó, pero no se pudo actualizar la vista:", refreshError);
+        app.notify("Producto guardado en Supabase; no se pudo actualizar la vista.");
       }
       document.getElementById("modal-root").innerHTML = "";
       app.render();
-      app.notify("Cambios guardados correctamente.");
-      return;
+      if (!refreshFailed) app.notify(existingProduct ? "Cambios guardados correctamente." : "Producto agregado al inventario.");
+    } catch (error) {
+      console.error("No se pudo guardar el producto en Supabase:", error);
+      app.notify("No se pudo guardar el producto: " + (error.message || "Error de Supabase."));
+      if (submitButton) submitButton.disabled = false;
     }
-
-    var product = {
-      id: "p" + Date.now(),
-      barcode: updatedValues.barcode,
-      emoji: "📦",
-      name: updatedValues.name,
-      category: updatedValues.category,
-      container: updatedValues.container,
-      location: updatedValues.location,
-      unit: updatedValues.unit,
-      inventoryType: updatedValues.inventoryType,
-      cost: updatedValues.cost,
-      price: updatedValues.price,
-      stock: updatedValues.stock,
-      min: updatedValues.min
-    };
-
-    var previousState = JSON.parse(JSON.stringify(app.state));
-    app.state.products.push(product);
-    if (product.stock > 0) {
-      app.state.movements.unshift({
-        id: "m" + Date.now(),
-        productId: product.id,
-        productName: product.name,
-        type: "Inventario inicial",
-        quantity: product.stock,
-        date: new Date().toISOString()
-      });
-    }
-    if (!app.saveState()) {
-      app.state = previousState;
-      return;
-    }
-    document.getElementById("modal-root").innerHTML = "";
-    app.render();
-    app.notify("Producto agregado al inventario.");
   };
 
-  app.saveStock = function (event) {
+  app.saveStock = async function (event) {
     event.preventDefault();
     var id = event.target.dataset.id;
     var quantity = Number(new FormData(event.target).get("quantity"));
@@ -164,45 +145,72 @@
       app.notify("Ingresa una cantidad válida.");
       return;
     }
+    var submitButton = event.target.querySelector('[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    try {
+      var result = await window.MercadoAuth.getSupabaseClient().rpc("receive_stock", {
+        p_product_id: id,
+        p_quantity: quantity
+      });
+      if (result.error) throw result.error;
 
-    var previousState = JSON.parse(JSON.stringify(app.state));
-    product.stock += quantity;
-    app.state.movements.unshift({
-      id: "m" + Date.now(),
-      productId: id,
-      productName: product.name,
-      type: "Entrada de mercancía",
-      quantity: quantity,
-      date: new Date().toISOString()
-    });
-    if (!app.saveState()) {
-      app.state = previousState;
-      return;
+      var refreshFailed = false;
+      try {
+        await app.reloadCloudData();
+      } catch (refreshError) {
+        refreshFailed = true;
+        console.error("La entrada se guardó, pero no se pudo actualizar la vista:", refreshError);
+        product.stock = Number(result.data);
+        app.state.movements.unshift({
+          id: "pending-refresh-" + Date.now(),
+          productId: id,
+          productName: product.name,
+          type: "Entrada de mercancía",
+          quantity: quantity,
+          date: new Date().toISOString()
+        });
+        app.saveState();
+        app.notify("Entrada guardada en Supabase; no se pudo actualizar la vista.");
+      }
+      document.getElementById("modal-root").innerHTML = "";
+      app.render();
+      if (!refreshFailed) app.notify("Entrada registrada: +" + quantity + " unidades.");
+    } catch (error) {
+      console.error("No se pudo registrar la entrada en Supabase:", error);
+      app.notify("No se pudo registrar la entrada: " + (error.message || "Error de Supabase."));
+      if (submitButton) submitButton.disabled = false;
     }
-    document.getElementById("modal-root").innerHTML = "";
-    app.render();
-    app.notify("Entrada registrada: +" + quantity + " unidades.");
   };
 
-  app.deleteProduct = function (id) {
+  app.deleteProduct = async function (id) {
     var product = app.state.products.find(function (item) { return item.id === id; });
     if (!product) return;
     if (!window.confirm('¿Eliminar "' + product.name + '" del inventario? Las ventas anteriores se conservarán.')) return;
 
-    var previousState = JSON.parse(JSON.stringify(app.state));
-    var previousCart = JSON.parse(JSON.stringify(app.cart));
-    var previousSelectionIds = (app.inventorySelectionIds || []).slice();
+    try {
+      var result = await window.MercadoAuth.getSupabaseClient()
+        .from("products").delete().eq("id", id).eq("owner_id", app.ownerId);
+      if (result.error) throw result.error;
+    } catch (error) {
+      console.error("No se pudo eliminar el producto de Supabase:", error);
+      app.notify("No se pudo eliminar el producto: " + (error.message || "Error de Supabase."));
+      return;
+    }
+
     app.state.products = app.state.products.filter(function (item) { return item.id !== id; });
     app.cart = app.cart.filter(function (item) { return item.id !== id; });
     app.inventorySelectionIds = (app.inventorySelectionIds || []).filter(function (itemId) { return itemId !== id; });
-    if (!app.saveState()) {
-      app.state = previousState;
-      app.cart = previousCart;
-      app.inventorySelectionIds = previousSelectionIds;
-      return;
+    app.saveState();
+    var refreshFailed = false;
+    try {
+      await app.reloadCloudData();
+    } catch (refreshError) {
+      refreshFailed = true;
+      console.error("El producto se eliminó, pero no se pudo actualizar la vista:", refreshError);
+      app.notify("Producto eliminado en Supabase; no se pudo actualizar la vista.");
     }
     app.render();
-    app.notify("Producto eliminado del inventario.");
+    if (!refreshFailed) app.notify("Producto eliminado del inventario.");
   };
 
   app.exportCsv = function () {

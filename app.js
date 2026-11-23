@@ -89,12 +89,33 @@
       new Intl.DateTimeFormat("es-VE", { weekday: "short", day: "numeric", month: "short" }).format(new Date());
 
     var content = document.getElementById("content");
+    if (!app.dataReady) {
+      content.innerHTML = app.dataError
+        ? '<section class="panel"><div class="panel-title">No se pudo conectar con Supabase</div><p class="panel-subtitle">' +
+          app.esc(app.dataError) + '</p><button class="button primary" data-action="retry-data">Reintentar</button></section>'
+        : '<section class="panel" role="status"><div class="panel-title">Conectando con Supabase…</div><p class="panel-subtitle">Cargando inventario y ventas.</p></section>';
+      return;
+    }
     if (app.page === "dashboard") content.innerHTML = app.renderDashboard();
     else if (app.page === "inventory") content.innerHTML = app.renderInventory();
     else if (app.page === "pos") content.innerHTML = app.renderPos();
     else content.innerHTML = app.renderReports();
 
     if (app.page === "pos") app.updateChange();
+  };
+
+  app.startDataLoad = function () {
+    app.dataReady = false;
+    app.dataError = "";
+    app.render();
+    return app.initializeData().then(function () {
+      app.dataReady = true;
+      app.render();
+    }).catch(function (error) {
+      console.error("No se pudieron cargar los datos de Supabase:", error);
+      app.dataError = error.message || "Verifica la conexión y la configuración de Supabase.";
+      app.render();
+    });
   };
 
   document.addEventListener("click", function (event) {
@@ -120,7 +141,8 @@
     if (!actionButton) return;
     var action = actionButton.dataset.action;
 
-    if (action === "add-product") app.openProductModal();
+    if (action === "retry-data") app.startDataLoad();
+    else if (action === "add-product") app.openProductModal();
     else if (action === "delete-product") app.deleteProduct(actionButton.dataset.id);
     else if (action === "stock") app.openStockModal(actionButton.dataset.id);
     else if (action === "inventory-selection") app.openInventorySelection();
@@ -292,6 +314,6 @@
   });
 
   app.loadTheme();
-  app.render();
+  app.startDataLoad();
   app.initializeExchangeRate();
 })(window.MercadoApp);
