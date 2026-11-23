@@ -2,6 +2,9 @@
 begin;
 
 alter table public.products
+  add column if not exists inventory_type text not null default 'sale',
+  add column if not exists active boolean not null default true,
+  add column if not exists stock_min integer not null default 0,
   add column if not exists container text not null default '',
   add column if not exists location text not null default '',
   add column if not exists unit text not null default 'Unidad';
