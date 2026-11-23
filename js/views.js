@@ -58,10 +58,10 @@
 
   app.renderInventory = function () {
     var state = app.state;
-    var query = app.searchTerm.toLowerCase();
+    var query = app.normalizeSearch(app.searchTerm);
     var products = state.products.filter(function (product) {
       return app.inventoryType(product) === "sale" &&
-        product.name.toLowerCase().indexOf(query) !== -1;
+        app.normalizeSearch(product.name).indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
       return '<tr><td data-label="Descripción"><div class="inventory-description">' +
@@ -74,7 +74,9 @@
         '</div></div></td><td data-label="Acciones"><div class="inventory-actions"><button class="button small" data-action="stock" data-id="' + app.esc(product.id) +
         '">＋ Entrada</button><button class="button small danger" data-action="delete-product" data-id="' +
         app.esc(product.id) + '" aria-label="Eliminar ' + app.esc(product.name) + '">Eliminar</button></div></td></tr>';
-    }).join("") : '<tr><td colspan="7" class="empty">No se encontraron productos.</td></tr>';
+    }).join("") : '<tr><td colspan="7" class="empty">' +
+      (query ? "No encontramos productos con ese nombre. Prueba otra búsqueda." :
+        "Todavía no hay productos en el inventario.") + '</td></tr>';
 
     var sectionProducts = state.products.filter(function (product) {
       return app.inventoryType(product) === "sale";
@@ -113,10 +115,10 @@
 
   app.renderPos = function () {
     var state = app.state;
-    var query = app.searchTerm.toLowerCase();
+    var query = app.normalizeSearch(app.searchTerm);
     var products = state.products.filter(function (product) {
       return app.inventoryType(product) === "sale" &&
-        (product.name + " " + product.barcode + " " + product.category).toLowerCase().indexOf(query) !== -1;
+        app.normalizeSearch(product.name + " " + product.barcode + " " + product.category).indexOf(query) !== -1;
     });
     var cards = products.map(function (product) {
       return '<button class="pos-product" data-action="add-cart" data-id="' + app.esc(product.id) + '" ' +
@@ -142,23 +144,32 @@
       var product = state.products.find(function (p) { return p.id === item.id; });
       return sum + (product ? product.price * item.quantity : 0);
     }, 0);
+    var paymentMethod = app.paymentMethod || "Efectivo";
+    var cashReceived = app.cashReceived !== "" ? app.cashReceived : (total ? Number(total).toFixed(2) : "");
+    var cashReceivedUsd = cashReceived !== "" ? app.formatUsdInput(Number(cashReceived)) : "";
 
     return app.pageHeading("Punto de venta", "Escanea el código de barras o busca el producto para agregarlo.", "") +
       '<div class="pos-layout"><section class="panel"><div class="panel-heading"><div><div class="panel-title">Productos</div><div class="panel-subtitle">Selecciona un producto para agregarlo a la venta</div></div></div>' +
       '<input class="search pos-search" id="pos-search" placeholder="⌕  Buscar o escanear código de barras..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar o escanear producto"><div class="pos-products">' +
-      (cards || '<div class="empty">No se encontraron productos.</div>') +
+      (cards || (query
+        ? '<div class="empty">No encontramos productos con ese nombre o código. Revisa la búsqueda.</div>'
+        : '<div class="empty">Todavía no hay productos para vender. <button class="text-link" data-page="inventory">Abrir inventario →</button></div>')) +
       '</div></section><section class="panel cart-panel"><div class="panel-heading"><div><div class="panel-title">Venta actual</div><div class="panel-subtitle">' +
       quantity + ' artículos</div></div><button class="text-link" data-action="clear-cart">Vaciar</button></div><div class="cart-items">' +
       cartRows + '</div><div class="cart-summary"><div class="summary-line"><span>Subtotal</span><span>' +
       app.moneyPair(total) + '</span></div><div class="summary-line"><span>Descuento</span><span>' +
       app.moneyPair(0) + '</span></div><div class="summary-line total"><span>Total a pagar</span><span>' +
       app.moneyPair(total) + '</span></div></div><form class="payment-form" id="checkout-form">' +
-      '<div class="field"><label for="payment-method">Método de pago</label><select id="payment-method" name="method"><option>Efectivo</option><option>Tarjeta de crédito/débito</option><option>Transferencia</option><option>Billetera digital / Pago móvil</option></select></div>' +
+      '<div class="field"><label for="payment-method">Método de pago</label><select id="payment-method" name="method"><option' +
+      (paymentMethod === "Efectivo" ? " selected" : "") + '>Efectivo</option><option' +
+      (paymentMethod === "Tarjeta de crédito/débito" ? " selected" : "") + '>Tarjeta de crédito/débito</option><option' +
+      (paymentMethod === "Transferencia" ? " selected" : "") + '>Transferencia</option><option' +
+      (paymentMethod === "Billetera digital / Pago móvil" ? " selected" : "") + '>Billetera digital / Pago móvil</option></select></div>' +
       '<div class="currency-input-group cash-currency-group" id="cash-field" data-currency-group><div class="field"><label for="cash-received">Efectivo recibido (Bs.S)</label><input id="cash-received" name="cash" data-currency-kind="bs" type="number" step="0.01" min="0" placeholder="' +
-      Number(total).toFixed(2) + '" value="' + (total ? Number(total).toFixed(2) : "") +
+      Number(total).toFixed(2) + '" value="' + app.esc(cashReceived) +
       '"></div><div class="field"><label for="cash-received-usd">Equivalente (USD)</label><input id="cash-received-usd" data-currency-kind="usd" type="number" step="0.01" min="0" value="' +
-      (total ? app.formatUsdInput(total) : "") + '"></div><p class="currency-rate-note">Tasa: 1 USD = ' + app.exchangeRate() +
+      app.esc(cashReceivedUsd) + '"></div><p class="currency-rate-note">Tasa: 1 USD = ' + app.exchangeRate() +
       ' Bs.</p></div><div class="change" id="change-due"></div><button class="button primary" type="submit" ' +
       (!app.cart.length ? "disabled" : "") + '>Cobrar ' + app.esc(app.money(total)) +
       ' <small class="button-usd" data-bs-value="' + total + '">(' + app.esc(app.moneyUsd(total)) + ')</small> →</button></form></section></div>';
@@ -166,9 +177,12 @@
 
   app.filteredSales = function (period) {
     var dateParts = (app.reportDate || "").split("-").map(Number);
-    var base = dateParts.length === 3
+    var base = dateParts.length === 3 && dateParts.every(Number.isInteger)
       ? new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
       : new Date();
+    if (dateParts.length !== 3 || !dateParts.every(Number.isInteger) ||
+      base.getFullYear() !== dateParts[0] || base.getMonth() !== dateParts[1] - 1 ||
+      base.getDate() !== dateParts[2]) base = new Date();
     base.setHours(0, 0, 0, 0);
 
     var start = new Date(base);
@@ -221,7 +235,7 @@
       (app.reportPeriod === "Hoy" ? "active" : "") + '">Hoy</button><button data-period="Semana" class="' +
       (app.reportPeriod === "Semana" ? "active" : "") + '">7 días</button><button data-period="Mes" class="' +
       (app.reportPeriod === "Mes" ? "active" : "") + '">Este mes</button></div>' +
-      '<label class="report-date-filter"><span>Fecha</span><input id="report-date" type="date" value="' + app.esc(dateInputValue) + '" aria-label="Seleccionar fecha"></label></div><section class="report-cards">' +
+      '<label class="report-date-filter"><span>Fecha</span><input id="report-date" type="date" required value="' + app.esc(dateInputValue) + '" aria-label="Seleccionar fecha"></label></div><section class="report-cards">' +
       app.statCard("Ingresos", app.moneyPair(revenue), sales.length + " ventas completadas", "↗", "blue", false) +
       app.statCard("Costo de mercancía", app.moneyPair(revenue - profit), "Costo histórico de los productos vendidos", "◈", "gold", false) +
       app.statCard("Ganancia bruta", app.moneyPair(profit), "Ingresos menos costo de mercancía", "✦", "", true) +

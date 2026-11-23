@@ -42,14 +42,18 @@
   app.reportDate = today.getFullYear() + "-" +
     String(today.getMonth() + 1).padStart(2, "0") + "-" +
     String(today.getDate()).padStart(2, "0");
+  app.paymentMethod = "Efectivo";
+  app.cashReceived = "";
   app.inventorySection = "sale";
 
   app.saveState = function () {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(app.state));
+      return true;
     } catch (error) {
       console.error("No se pudieron guardar los datos locales:", error);
       app.notify("No se pudieron guardar los cambios en este navegador.");
+      return false;
     }
   };
 })(window.MercadoApp = window.MercadoApp || {});

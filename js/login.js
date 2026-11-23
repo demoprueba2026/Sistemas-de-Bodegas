@@ -61,7 +61,7 @@
       errorMessage.textContent = "Usuario o contraseña incorrectos.";
     }).catch(function (error) {
       console.error("No se pudo iniciar la sesión:", error);
-      errorMessage.textContent = "No se pudo iniciar la sesión.";
+      errorMessage.textContent = "No se pudo verificar el acceso. Revisa tus datos e inténtalo de nuevo.";
     }).finally(function () {
       submitButton.disabled = false;
     });

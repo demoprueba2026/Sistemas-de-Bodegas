@@ -144,6 +144,7 @@
     else if (action === "qty") app.changeQuantity(actionButton.dataset.id, Number(actionButton.dataset.delta));
     else if (action === "clear-cart") {
       app.cart.length = 0;
+      app.cashReceived = "";
       app.render();
     } else if (action === "close-modal") document.getElementById("modal-root").innerHTML = "";
     else if (action === "print-receipt") window.print();
@@ -154,7 +155,10 @@
     var inputId = event.target.id;
     if (event.target.matches("[data-currency-kind]")) {
       app.syncCurrencyInput(event.target);
-      if (event.target.closest("#cash-field")) app.updateChange();
+      if (event.target.closest("#cash-field")) {
+        app.cashReceived = document.getElementById("cash-received").value;
+        app.updateChange();
+      }
     } else if (inputId === "container-search") {
       var containerCursor = event.target.selectionStart;
       app.containerSearchTerm = event.target.value;
@@ -176,8 +180,15 @@
   });
 
   document.addEventListener("change", function (event) {
-    if (event.target.id === "payment-method") app.updateChange();
+    if (event.target.id === "payment-method") {
+      app.paymentMethod = event.target.value;
+      app.updateChange();
+    }
     if (event.target.id === "report-date") {
+      if (!event.target.value) {
+        event.target.value = app.reportDate;
+        return;
+      }
       app.reportDate = event.target.value;
       app.render();
     }
@@ -252,13 +263,14 @@
     if (app.page === "pos" && event.key === "Enter" && event.target.id === "pos-search") {
       event.preventDefault();
       var barcode = event.target.value.trim();
+      if (!barcode) return;
       var exact = app.state.products.find(function (product) {
         return app.inventoryType(product) === "sale" && product.barcode === barcode && product.stock > 0;
       });
       var matches = app.state.products.filter(function (product) {
         var searchable = product.name + " " + product.barcode + " " + product.category;
         return app.inventoryType(product) === "sale" &&
-          searchable.toLowerCase().indexOf(barcode.toLowerCase()) !== -1 && product.stock > 0;
+          app.normalizeSearch(searchable).indexOf(app.normalizeSearch(barcode)) !== -1 && product.stock > 0;
       });
 
       if (exact || matches.length === 1) {

@@ -44,6 +44,14 @@
     });
   };
 
+  app.normalizeSearch = function (value) {
+    return String(value == null ? "" : value)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  };
+
   app.money = function (value) {
     return new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(Number(value) || 0);
   };

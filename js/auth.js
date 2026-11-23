@@ -1,9 +1,8 @@
 (function (window) {
   "use strict";
 
-  var SESSION_KEY = "mercado-auth-user";
-  var USERNAME = "admin";
-  var PASSWORD = "admin123";
+  var SESSION_KEY = "mercado-supabase-auth-user";
+  var SESSION_VALUE = "authenticated";
   var SUPABASE_URL = "https://pdejtjasizzzdghwynyi.supabase.co";
   var SUPABASE_ANON_KEY = "sb_publishable_UKbFCTv_JRkyRMG4UH3k5g_GGMisfyG";
   var supabase = null;
@@ -21,31 +20,33 @@
   var auth = {
     isAuthenticated: function () {
       try {
-        return window.sessionStorage.getItem(SESSION_KEY) === USERNAME;
+        return window.sessionStorage.getItem(SESSION_KEY) === SESSION_VALUE;
       } catch (error) {
         console.error("No se pudo consultar la sesión:", error);
         return false;
       }
     },
     login: function (username, password) {
-      if (username === USERNAME && password === PASSWORD) {
-        window.sessionStorage.setItem(SESSION_KEY, USERNAME);
-        return Promise.resolve(true);
-      }
       if (!supabase || username.indexOf("@") === -1) return Promise.resolve(false);
       return supabase.auth.signInWithPassword({
         email: username,
         password: password
       }).then(function (result) {
-        if (result.error) return false;
-        window.sessionStorage.setItem(SESSION_KEY, USERNAME);
+        if (result.error) throw result.error;
+        window.sessionStorage.setItem(SESSION_KEY, SESSION_VALUE);
         return true;
       });
     },
     logout: function () {
       window.sessionStorage.removeItem(SESSION_KEY);
-      if (supabase) supabase.auth.signOut().catch(function () {});
-      window.location.replace("login.html");
+      var signOut = supabase ? supabase.auth.signOut() : Promise.resolve();
+      return signOut.then(function (result) {
+        if (result && result.error) throw result.error;
+      }).catch(function (error) {
+        console.error("No se pudo cerrar completamente la sesión de Supabase:", error);
+      }).then(function () {
+        window.location.replace("login.html");
+      });
     },
     getAccountInfo: function () {
       if (!supabase) return Promise.resolve({ name: "Administrador", email: "admin@mercado.local" });

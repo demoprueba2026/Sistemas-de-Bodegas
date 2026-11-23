@@ -23,6 +23,7 @@
     item.quantity += delta;
     if (item.quantity <= 0) {
       app.cart = app.cart.filter(function (row) { return row.id !== id; });
+      if (!app.cart.length) app.cashReceived = "";
     }
     app.render();
   };
@@ -76,6 +77,7 @@
     var cash = method === "Efectivo" ? Number(document.getElementById("cash-received").value) : total;
     if (!Number.isFinite(cash) || cash < total) { app.notify("El efectivo recibido no cubre el total."); return; }
 
+    var previousState = JSON.parse(JSON.stringify(app.state));
     items.forEach(function (item) {
       var product = app.state.products.find(function (p) { return p.id === item.productId; });
       product.stock -= item.quantity;
@@ -100,8 +102,13 @@
       items: items
     };
     app.state.sales.push(sale);
-    app.saveState();
+    if (!app.saveState()) {
+      app.state = previousState;
+      return;
+    }
     app.cart.length = 0;
+    app.cashReceived = "";
+    app.paymentMethod = "Efectivo";
     app.render();
     app.showReceipt(sale);
   };

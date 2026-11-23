@@ -93,6 +93,7 @@
     };
 
     if (existingProduct) {
+      var previousState = JSON.parse(JSON.stringify(app.state));
       var stockChange = updatedValues.stock - existingProduct.stock;
       Object.keys(updatedValues).forEach(function (key) {
         existingProduct[key] = updatedValues[key];
@@ -107,7 +108,10 @@
           date: new Date().toISOString()
         });
       }
-      app.saveState();
+      if (!app.saveState()) {
+        app.state = previousState;
+        return;
+      }
       document.getElementById("modal-root").innerHTML = "";
       app.render();
       app.notify("Cambios guardados correctamente.");
@@ -130,6 +134,7 @@
       min: updatedValues.min
     };
 
+    var previousState = JSON.parse(JSON.stringify(app.state));
     app.state.products.push(product);
     if (product.stock > 0) {
       app.state.movements.unshift({
@@ -141,7 +146,10 @@
         date: new Date().toISOString()
       });
     }
-    app.saveState();
+    if (!app.saveState()) {
+      app.state = previousState;
+      return;
+    }
     document.getElementById("modal-root").innerHTML = "";
     app.render();
     app.notify("Producto agregado al inventario.");
@@ -157,6 +165,7 @@
       return;
     }
 
+    var previousState = JSON.parse(JSON.stringify(app.state));
     product.stock += quantity;
     app.state.movements.unshift({
       id: "m" + Date.now(),
@@ -166,7 +175,10 @@
       quantity: quantity,
       date: new Date().toISOString()
     });
-    app.saveState();
+    if (!app.saveState()) {
+      app.state = previousState;
+      return;
+    }
     document.getElementById("modal-root").innerHTML = "";
     app.render();
     app.notify("Entrada registrada: +" + quantity + " unidades.");
@@ -177,10 +189,18 @@
     if (!product) return;
     if (!window.confirm('¿Eliminar "' + product.name + '" del inventario? Las ventas anteriores se conservarán.')) return;
 
+    var previousState = JSON.parse(JSON.stringify(app.state));
+    var previousCart = JSON.parse(JSON.stringify(app.cart));
+    var previousSelectionIds = (app.inventorySelectionIds || []).slice();
     app.state.products = app.state.products.filter(function (item) { return item.id !== id; });
     app.cart = app.cart.filter(function (item) { return item.id !== id; });
     app.inventorySelectionIds = (app.inventorySelectionIds || []).filter(function (itemId) { return itemId !== id; });
-    app.saveState();
+    if (!app.saveState()) {
+      app.state = previousState;
+      app.cart = previousCart;
+      app.inventorySelectionIds = previousSelectionIds;
+      return;
+    }
     app.render();
     app.notify("Producto eliminado del inventario.");
   };
@@ -252,11 +272,11 @@
   };
 
   app.renderContainerSearch = function () {
-    var query = (app.containerSearchTerm || "").toLowerCase().trim();
+    var query = app.normalizeSearch(app.containerSearchTerm);
     var products = app.state.products.filter(function (product) {
       return app.inventoryType(product) === "sale" &&
-        (!query || (String(product.container || "") + " " + String(product.location || "") + " " + product.name)
-          .toLowerCase().indexOf(query) !== -1);
+        (!query || app.normalizeSearch(String(product.container || "") + " " +
+          String(product.location || "") + " " + product.name).indexOf(query) !== -1);
     });
     var rows = products.length ? products.map(function (product) {
       return '<tr><td>' + app.esc(product.container || "—") + '</td><td>' + app.esc(product.location || "—") +
