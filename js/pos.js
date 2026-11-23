@@ -114,7 +114,8 @@
 
     document.getElementById("modal-root").innerHTML =
       '<div class="modal-backdrop" id="receipt-backdrop"><div class="modal"><div class="modal-head"><h2>Venta completada</h2>' +
-      '<button class="close-button" data-action="close-modal" aria-label="Cerrar">×</button></div><div class="receipt"><h3>MI MERCADO</h3>' +
+      '<button class="close-button" data-action="close-modal" aria-label="Cerrar">×</button></div><div class="receipt"><h3>PENSANDO EN REDES C.A.</h3>' +
+      '<div class="receipt-center">RIF: J-12345678-9</div>' +
       '<div class="receipt-center">Gracias por tu compra</div><hr><div>Ticket: #' + app.esc(sale.receipt) +
       '</div><div>' + app.esc(new Intl.DateTimeFormat("es-VE", { dateStyle: "short", timeStyle: "short" }).format(new Date(sale.createdAt))) +
       '</div><hr>' + itemRows + '<hr><div class="receipt-line"><strong>TOTAL</strong><strong>' +
