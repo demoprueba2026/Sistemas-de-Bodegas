@@ -66,7 +66,27 @@
           </div>
           <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Activar modo oscuro" aria-pressed="false" title="Activar modo oscuro">☾</button>
           <button class="logout-button" id="logout-button" type="button" aria-label="Cerrar sesión" title="Cerrar sesión"><span aria-hidden="true">↪</span><span class="logout-label">Salir</span></button>
-          <button class="avatar" title="Usuario administrador">AD</button>
+          <div class="account-menu-wrap">
+            <button class="avatar" id="account-avatar" type="button" title="Mi cuenta" aria-label="Abrir menú de cuenta" aria-haspopup="menu" aria-expanded="false">AD</button>
+            <div class="account-menu" id="account-menu" role="menu" hidden>
+              <button class="account-menu-close" id="account-menu-close" type="button" aria-label="Cerrar menú">×</button>
+              <div class="account-profile">
+                <div class="account-avatar">AD</div>
+                <div class="account-profile-text">
+                  <strong id="account-name">Administrador</strong>
+                  <span id="account-email">admin@mercado.local</span>
+                </div>
+              </div>
+              <button class="account-menu-item" id="switch-account" type="button" role="menuitem">
+                <span aria-hidden="true">↪</span>
+                <span>Cambiar cuenta</span>
+              </button>
+              <button class="account-menu-item" id="account-logout" type="button" role="menuitem">
+                <span aria-hidden="true">⏻</span>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
         </div>
       </header>
       <div class="content" id="content">

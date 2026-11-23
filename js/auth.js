@@ -44,7 +44,21 @@
     },
     logout: function () {
       window.sessionStorage.removeItem(SESSION_KEY);
+      if (supabase) supabase.auth.signOut().catch(function () {});
       window.location.replace("login.html");
+    },
+    getAccountInfo: function () {
+      if (!supabase) return Promise.resolve({ name: "Administrador", email: "admin@mercado.local" });
+      return supabase.auth.getUser().then(function (result) {
+        var user = result.data && result.data.user;
+        if (!user) return { name: "Administrador", email: "admin@mercado.local" };
+        var name = user.user_metadata && user.user_metadata.full_name
+          ? user.user_metadata.full_name
+          : "Administrador";
+        return { name: name, email: user.email || "Usuario autorizado" };
+      }).catch(function () {
+        return { name: "Administrador", email: "admin@mercado.local" };
+      });
     },
     requestPasswordReset: function (email) {
       if (!supabase) return Promise.reject(new Error("Supabase no está disponible."));

@@ -156,8 +156,39 @@
     window.MercadoAuth.logout();
   });
 
+  var accountAvatar = document.getElementById("account-avatar");
+  var accountMenu = document.getElementById("account-menu");
+  var accountMenuClose = document.getElementById("account-menu-close");
+
+  function closeAccountMenu() {
+    accountMenu.hidden = true;
+    accountAvatar.setAttribute("aria-expanded", "false");
+  }
+
+  accountAvatar.addEventListener("click", function (event) {
+    event.stopPropagation();
+    var opening = accountMenu.hidden;
+    accountMenu.hidden = !opening;
+    accountAvatar.setAttribute("aria-expanded", opening ? "true" : "false");
+  });
+  accountMenuClose.addEventListener("click", closeAccountMenu);
+  window.MercadoAuth.getAccountInfo().then(function (account) {
+    document.getElementById("account-name").textContent = account.name;
+    document.getElementById("account-email").textContent = account.email;
+  });
+  document.getElementById("switch-account").addEventListener("click", function () {
+    window.MercadoAuth.logout();
+  });
+  document.getElementById("account-logout").addEventListener("click", function () {
+    window.MercadoAuth.logout();
+  });
+  document.addEventListener("click", function (event) {
+    if (!event.target.closest(".account-menu-wrap")) closeAccountMenu();
+  });
+
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") document.getElementById("modal-root").innerHTML = "";
+    if (event.key === "Escape" && document.getElementById("account-menu")) closeAccountMenu();
     if (app.page === "pos" && event.key === "Enter" && event.target.id === "pos-search") {
       event.preventDefault();
       var barcode = event.target.value.trim();
