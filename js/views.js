@@ -174,11 +174,25 @@
   };
 
   app.filteredSales = function (period) {
-    var start = new Date();
-    start.setHours(0, 0, 0, 0);
+    var dateParts = (app.reportDate || "").split("-").map(Number);
+    var base = dateParts.length === 3
+      ? new Date(dateParts[0], dateParts[1] - 1, dateParts[2])
+      : new Date();
+    base.setHours(0, 0, 0, 0);
+
+    var start = new Date(base);
+    var end = new Date(base);
+    end.setHours(23, 59, 59, 999);
+
     if (period === "Semana") start.setDate(start.getDate() - 6);
-    if (period === "Mes") start.setDate(1);
-    return app.state.sales.filter(function (sale) { return !sale.voided && new Date(sale.createdAt) >= start; });
+    if (period === "Mes") start = new Date(base.getFullYear(), base.getMonth(), 1);
+    if (period === "Mes") end = new Date(base.getFullYear(), base.getMonth() + 1, 0, 23, 59, 59, 999);
+    if (period === "Hoy") start = new Date(base);
+
+    return app.state.sales.filter(function (sale) {
+      var saleDate = new Date(sale.createdAt);
+      return !sale.voided && saleDate >= start && saleDate <= end;
+    });
   };
 
   app.renderReports = function () {
@@ -210,11 +224,13 @@
         '</td><td class="price">' + app.moneyPair(sale.profit) + '</td></tr>';
     }).join("");
 
+    var dateInputValue = app.reportDate || "";
     return app.pageHeading("Reportes", "Consulta ventas, costos y ganancias de tu negocio.", "") +
-      '<div class="period-tabs report-period-tabs"><button data-period="Hoy" class="' +
+      '<div class="report-filter-row"><div class="period-tabs report-period-tabs"><button data-period="Hoy" class="' +
       (app.reportPeriod === "Hoy" ? "active" : "") + '">Hoy</button><button data-period="Semana" class="' +
       (app.reportPeriod === "Semana" ? "active" : "") + '">7 días</button><button data-period="Mes" class="' +
-      (app.reportPeriod === "Mes" ? "active" : "") + '">Este mes</button></div><section class="report-cards">' +
+      (app.reportPeriod === "Mes" ? "active" : "") + '">Este mes</button></div>' +
+      '<label class="report-date-filter"><span>Fecha</span><input id="report-date" type="date" value="' + app.esc(dateInputValue) + '" aria-label="Seleccionar fecha"></label></div><section class="report-cards">' +
       app.statCard("Ingresos", app.moneyPair(revenue), sales.length + " ventas completadas", "↗", "blue", false) +
       app.statCard("Costo de mercancía", app.moneyPair(revenue - profit), "Costo histórico de los productos vendidos", "◈", "gold", false) +
       app.statCard("Ganancia bruta", app.moneyPair(profit), "Ingresos menos costo de mercancía", "✦", "", true) +

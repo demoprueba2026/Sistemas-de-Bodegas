@@ -38,6 +38,10 @@
   app.page = "dashboard";
   app.searchTerm = "";
   app.reportPeriod = "Hoy";
+  var today = new Date();
+  app.reportDate = today.getFullYear() + "-" +
+    String(today.getMonth() + 1).padStart(2, "0") + "-" +
+    String(today.getDate()).padStart(2, "0");
   app.inventorySection = "sale";
 
   app.saveState = function () {

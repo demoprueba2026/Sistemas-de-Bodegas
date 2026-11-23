@@ -26,8 +26,20 @@
     body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(900px at 95% -8%, rgba(52, 141, 96, .08), transparent 62%), var(--canvas); }
     button, input, select { font: inherit; }
     button { cursor: pointer; }
-    .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
-    .sidebar { background: var(--surface); border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; gap: 30px; box-shadow: 8px 0 30px rgba(27, 55, 39, .025); }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); transition: grid-template-columns .2s ease; }
+    .sidebar { position: relative; background: var(--surface); border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; gap: 30px; box-shadow: 8px 0 30px rgba(27, 55, 39, .025); transition: padding .2s ease; }
+    .sidebar-toggle { position: absolute; z-index: 7; right: -13px; top: 28px; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--muted); display: grid; place-items: center; box-shadow: 0 4px 12px rgba(27,55,39,.12); font-size: 20px; line-height: 1; }
+    .app.sidebar-collapsed { grid-template-columns: 72px minmax(0, 1fr); }
+    .app.sidebar-collapsed .sidebar { padding: 24px 12px; align-items: center; }
+    .app.sidebar-collapsed .brand { padding: 0; }
+    .app.sidebar-collapsed .brand > div:last-child,
+    .app.sidebar-collapsed .nav-label,
+    .app.sidebar-collapsed .store-card > div:last-child { display: none; }
+    .app.sidebar-collapsed .nav { gap: 8px; }
+    .app.sidebar-collapsed .nav button { width: 48px; height: 48px; justify-content: center; padding: 0; font-size: 0; gap: 0; }
+    .app.sidebar-collapsed .nav-icon { width: auto; font-size: 19px; }
+    .app.sidebar-collapsed .store-card { width: 48px; height: 48px; justify-content: center; padding: 0; }
+    .app.sidebar-collapsed .sidebar-toggle span { transform: rotate(180deg); display: block; }
     .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; }
     .brand-mark { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(145deg, #21a36e, #116747); color: #fff; font-size: 19px; font-weight: 800; box-shadow: 0 7px 16px rgba(21, 124, 88, .22); }
     .brand-name { font-weight: 750; letter-spacing: -.4px; font-size: 17px; }
@@ -238,6 +250,10 @@
     .report-highlight .stat-value { color: #fff; }
     .period-tabs { display: flex; background: var(--surface-muted); border: 1px solid var(--line); border-radius: 11px; padding: 4px; gap: 4px; }
     .report-period-tabs { display: inline-flex; margin-bottom: 16px; }
+    .report-filter-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .report-filter-row .report-period-tabs { margin-bottom: 0; }
+    .report-date-filter { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 9px 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 700; }
+    .report-date-filter input { border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 11px; cursor: pointer; }
     .period-tabs button { border: 0; background: transparent; color: var(--muted); padding: 6px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; }
     .period-tabs button.active { background: var(--surface); color: var(--green-dark); box-shadow: 0 2px 6px rgba(25, 55, 38, .1); }
     .inventory-section-tabs { width: fit-content; max-width: 100%; margin-bottom: 8px; }
@@ -284,6 +300,14 @@
       .app { display: block; }
       .sidebar { position: fixed; z-index: 6; left: 0; top: 0; bottom: 0; width: 245px; transform: translateX(-105%); transition: transform .2s; box-shadow: 10px 0 35px #152b2018; }
       .sidebar.open { transform: translateX(0); }
+      .sidebar-toggle { display: none; }
+      .app.sidebar-collapsed .sidebar { padding: 24px 16px; align-items: stretch; }
+      .app.sidebar-collapsed .brand { padding: 0 10px; }
+      .app.sidebar-collapsed .brand > div:last-child,
+      .app.sidebar-collapsed .nav-label,
+      .app.sidebar-collapsed .store-card > div:last-child { display: block; }
+      .app.sidebar-collapsed .nav button { width: auto; height: auto; justify-content: flex-start; padding: 11px 12px; font-size: 13px; gap: 12px; }
+      .app.sidebar-collapsed .store-card { width: auto; height: auto; justify-content: flex-start; padding: 13px; }
       .mobile-menu { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); margin-right: 10px; }
       .topbar { height: 60px; padding: 0 15px; }
       .content { padding: 24px 15px 35px; }
@@ -298,6 +322,7 @@
       .cart-panel { position: static; }
       .report-cards { grid-template-columns: 1fr 1fr; }
       .report-cards .stat-card:last-child { grid-column: 1/-1; }
+      .report-filter-row { flex-wrap: wrap; }
       .toolbar { flex-wrap: wrap; }
       .search { flex: 1; width: 100%; min-width: 150px; }
       .inventory-section-tabs { width: 100%; }

@@ -129,6 +129,10 @@
 
   document.addEventListener("change", function (event) {
     if (event.target.id === "payment-method") app.updateChange();
+    if (event.target.id === "report-date") {
+      app.reportDate = event.target.value;
+      app.render();
+    }
   });
 
   document.addEventListener("submit", function (event) {
@@ -139,6 +143,18 @@
 
   document.getElementById("mobile-menu").addEventListener("click", function () {
     document.getElementById("sidebar").classList.toggle("open");
+  });
+
+  var sidebarToggle = document.getElementById("sidebar-toggle");
+  var savedSidebarState = localStorage.getItem("mercado-sidebar-collapsed") === "true";
+  document.querySelector(".app").classList.toggle("sidebar-collapsed", savedSidebarState);
+  sidebarToggle.setAttribute("aria-label", savedSidebarState ? "Desplegar barra lateral" : "Plegar barra lateral");
+  sidebarToggle.setAttribute("title", savedSidebarState ? "Desplegar barra lateral" : "Plegar barra lateral");
+  sidebarToggle.addEventListener("click", function () {
+    var collapsed = document.querySelector(".app").classList.toggle("sidebar-collapsed");
+    localStorage.setItem("mercado-sidebar-collapsed", collapsed ? "true" : "false");
+    sidebarToggle.setAttribute("aria-label", collapsed ? "Desplegar barra lateral" : "Plegar barra lateral");
+    sidebarToggle.setAttribute("title", collapsed ? "Desplegar barra lateral" : "Plegar barra lateral");
   });
 
   document.getElementById("theme-toggle").addEventListener("click", function () {
