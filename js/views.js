@@ -30,8 +30,8 @@
     }).join("");
 
     var alertRows = alerts.length ? alerts.slice(0, 5).map(function (product) {
-      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") + '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">' + app.esc(product.category) + '</div></div><span class="stock-pill">' + product.stock + ' / mín. ' + product.min + '</span></div>';
-    }).join("") : '<div class="empty">Todo en orden. No hay productos bajo el mínimo.</div>';
+      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") + '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">' + app.esc(product.category) + '</div></div><span class="stock-pill">Agotado · 0 unidades</span></div>';
+    }).join("") : '<div class="empty">Todo en orden. No hay productos agotados.</div>';
 
     var recent = state.sales.filter(function (sale) { return !sale.voided; })
       .slice().sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); }).slice(0, 5);
@@ -51,7 +51,7 @@
         app.statCard("Alertas de inventario", alerts.length, alerts.length ? "Requieren atención" : "Sin alertas pendientes", "⚑", "red", false) +
       '</section>' +
       '<section class="dashboard-grid"><div class="panel"><div class="panel-heading"><div><div class="panel-title">Ventas de la semana</div><div class="panel-subtitle">Ingresos registrados en los últimos 7 días</div></div><span class="status">Últimos 7 días</span></div><div class="chart-wrap"><div class="chart-y"><span>' + app.esc(app.money(max)) + '</span><span>' + app.esc(app.money(max / 2)) + '</span><span>' + app.esc(app.money(0)) + '</span></div><div class="chart-bars">' + bars + '</div></div><div class="chart-legend"><span><i class="legend-dot dark"></i>Hoy</span><span><i class="legend-dot"></i>Días anteriores</span></div></div>' +
-      '<div class="panel"><div class="panel-heading"><div><div class="panel-title">Por reabastecer</div><div class="panel-subtitle">' + alerts.length + ' productos necesitan atención</div></div></div><div class="alert-list">' + alertRows + '</div><div class="panel-footer"><button class="text-link" data-go="inventory">Ver inventario y sugerencias →</button></div></div></section>' +
+      '<div class="panel"><div class="panel-heading"><div><div class="panel-title">Productos agotados</div><div class="panel-subtitle">' + alerts.length + ' productos con existencia en 0</div></div></div><div class="alert-list">' + alertRows + '</div><div class="panel-footer"><button class="text-link" data-go="inventory">Ver inventario →</button></div></div></section>' +
       '<section class="lower-grid"><div class="panel"><div class="panel-heading"><div><div class="panel-title">Ventas recientes</div><div class="panel-subtitle">Últimas transacciones de la tienda</div></div><button class="text-link" data-go="reports">Ver reportes →</button></div><div class="table-wrap"><table><thead><tr><th>Ticket</th><th>Hora</th><th>Artículos</th><th>Pago</th><th>Total</th></tr></thead><tbody>' + recentRows + '</tbody></table></div></div>' +
       '<div class="panel"><div class="panel-heading"><div><div class="panel-title">Acceso rápido</div><div class="panel-subtitle">Tareas frecuentes</div></div></div><div class="alert-list"><div class="alert-row"><span class="product-thumb">▣</span><div><div class="alert-name">Registrar una venta</div><div class="alert-category">Cobrar y emitir ticket</div></div><button class="text-link" data-go="pos">Abrir →</button></div><div class="alert-row"><span class="product-thumb">＋</span><div><div class="alert-name">Agregar producto</div><div class="alert-category">Ampliar el catálogo</div></div><button class="text-link" data-action="add-product">Agregar →</button></div></div></div></section>';
   };
@@ -93,12 +93,10 @@
       return app.inventoryType(product) === "sale";
     });
     var alertContent = alerts.length ? alerts.map(function (product) {
-      var suggested = Math.max(product.min * 2 - product.stock, 0);
       return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") +
-        '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">Actual: ' +
-        product.stock + ' · Mínimo: ' + product.min + ' · Sugerido: ' + suggested +
-        ' uds.</div></div><button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">Reponer</button></div>';
-    }).join("") : '<div class="empty">No hay productos por reabastecer.</div>';
+        '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">Agotado · Existencia: 0</div></div>' +
+        '<button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">Reponer</button></div>';
+    }).join("") : '<div class="empty">Todos los productos tienen existencias.</div>';
 
     return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta contenedor, ubicación y cantidades de los productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
       '<section class="inventory-overview" aria-label="Resumen del inventario"><div class="inventory-total"><span>Valor total del inventario</span><strong>' +
@@ -109,8 +107,8 @@
       products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar por nombre del producto..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar por nombre del producto"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
       '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-container"><col class="inventory-col-location"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
-      rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Sugerencias de reabastecimiento</div><div class="panel-subtitle">Estimación para llevar cada producto al doble del mínimo</div></div><span class="status low">' +
-      alerts.length + ' alertas</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
+      rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Productos agotados</div><div class="panel-subtitle">Solo aparecen productos con existencia en 0</div></div><span class="status low">' +
+      alerts.length + ' agotados</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
   };
 
   app.renderPos = function () {

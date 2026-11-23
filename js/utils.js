@@ -226,7 +226,7 @@
   };
 
   app.stockAlerts = function () {
-    return app.state.products.filter(function (product) { return product.stock <= product.min; });
+    return app.state.products.filter(function (product) { return Number(product.stock) === 0; });
   };
 
   app.notify = function (message) {
@@ -278,8 +278,7 @@
   };
 
   app.stateTag = function (product) {
-    if (product.stock <= 0) return '<span class="status out">Agotado</span>';
-    if (product.stock <= product.min) return '<span class="status low">Stock bajo</span>';
+    if (Number(product.stock) === 0) return '<span class="status out">Agotado</span>';
     return '<span class="status">Disponible</span>';
   };
 
