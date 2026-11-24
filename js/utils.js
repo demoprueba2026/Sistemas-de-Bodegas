@@ -226,7 +226,10 @@
   };
 
   app.stockAlerts = function () {
-    return app.state.products.filter(function (product) { return Number(product.stock) === 0; });
+    return app.state.products.filter(function (product) {
+      return app.inventoryType(product) === "sale" &&
+        app.stockRisk(product).tone === "critical";
+    });
   };
 
   app.stockRisk = function (product) {

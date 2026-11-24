@@ -30,8 +30,10 @@
     }).join("");
 
     var alertRows = alerts.length ? alerts.slice(0, 5).map(function (product) {
-      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") + '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">' + app.esc(product.category) + '</div></div><span class="stock-pill">Agotado · 0 unidades</span></div>';
-    }).join("") : '<div class="empty">Todo en orden. No hay productos agotados.</div>';
+      var stock = Math.max(0, Number(product.stock) || 0);
+      var label = stock === 0 ? "Agotado" : "Existencia baja";
+      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") + '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">' + app.esc(product.category) + '</div></div><span class="stock-pill">' + label + ' · ' + stock + ' ' + (stock === 1 ? "unidad" : "unidades") + '</span></div>';
+    }).join("") : '<div class="empty">Todo en orden. No hay productos con existencia baja.</div>';
 
     var recent = state.sales.filter(function (sale) { return !sale.voided; })
       .slice().sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); }).slice(0, 5);
@@ -51,7 +53,7 @@
         app.statCard("Alertas de inventario", alerts.length, alerts.length ? "Requieren atención" : "Sin alertas pendientes", "⚑", "red", false) +
       '</section>' +
       '<section class="dashboard-grid"><div class="panel"><div class="panel-heading"><div><div class="panel-title">Ventas de la semana</div><div class="panel-subtitle">Ingresos registrados en los últimos 7 días</div></div><span class="status">Últimos 7 días</span></div><div class="chart-wrap"><div class="chart-y"><span>' + app.esc(app.money(max)) + '</span><span>' + app.esc(app.money(max / 2)) + '</span><span>' + app.esc(app.money(0)) + '</span></div><div class="chart-bars">' + bars + '</div></div><div class="chart-legend"><span><i class="legend-dot dark"></i>Hoy</span><span><i class="legend-dot"></i>Días anteriores</span></div></div>' +
-      '<div class="panel"><div class="panel-heading"><div><div class="panel-title">Productos agotados</div><div class="panel-subtitle">' + alerts.length + ' productos con existencia en 0</div></div></div><div class="alert-list">' + alertRows + '</div><div class="panel-footer"><button class="text-link" data-go="inventory">Ver inventario →</button></div></div></section>' +
+      '<div class="panel"><div class="panel-heading"><div><div class="panel-title">Productos con existencia baja</div><div class="panel-subtitle">' + alerts.length + ' productos requieren atención</div></div></div><div class="alert-list">' + alertRows + '</div><div class="panel-footer"><button class="text-link" data-go="inventory">Ver inventario →</button></div></div></section>' +
       '<section class="lower-grid"><div class="panel"><div class="panel-heading"><div><div class="panel-title">Ventas recientes</div><div class="panel-subtitle">Últimas transacciones de la tienda</div></div><button class="text-link" data-go="reports">Ver reportes →</button></div><div class="table-wrap"><table><thead><tr><th>Ticket</th><th>Hora</th><th>Artículos</th><th>Pago</th><th>Total</th></tr></thead><tbody>' + recentRows + '</tbody></table></div></div>' +
       '<div class="panel"><div class="panel-heading"><div><div class="panel-title">Acceso rápido</div><div class="panel-subtitle">Tareas frecuentes</div></div></div><div class="alert-list"><div class="alert-row"><span class="product-thumb">▣</span><div><div class="alert-name">Registrar una venta</div><div class="alert-category">Cobrar y emitir ticket</div></div><button class="text-link" data-go="pos">Abrir →</button></div><div class="alert-row"><span class="product-thumb">＋</span><div><div class="alert-name">Agregar producto</div><div class="alert-category">Ampliar el catálogo</div></div><button class="text-link" data-action="add-product">Agregar →</button></div></div></div></section>';
   };
