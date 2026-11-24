@@ -229,6 +229,29 @@
     return app.state.products.filter(function (product) { return Number(product.stock) === 0; });
   };
 
+  app.stockRisk = function (product) {
+    var stock = Math.max(0, Number(product.stock) || 0);
+    var percent;
+    var tone;
+    var label;
+
+    if (stock < 10) {
+      percent = Math.round(90 + (9 - stock) * (10 / 9));
+      tone = "critical";
+      label = "Bajo";
+    } else if (stock <= 30) {
+      percent = Math.round(90 - (stock - 10) * 2);
+      tone = "warning";
+      label = "Medio";
+    } else {
+      percent = Math.max(0, Math.round(50 - (stock - 30) * 1.25));
+      tone = "healthy";
+      label = "Óptimo";
+    }
+
+    return { percent: percent, tone: tone, label: label };
+  };
+
   app.notify = function (message) {
     var toast = document.getElementById("toast");
     toast.textContent = message;

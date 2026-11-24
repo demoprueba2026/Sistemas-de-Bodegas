@@ -64,10 +64,15 @@
         app.normalizeSearch(product.name).indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
+      var stockRisk = app.stockRisk(product);
       return '<tr><td data-label="Descripción"><div class="inventory-description">' +
         app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
-        '</div></td><td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="Ubicación">' +
-        app.esc(product.location || "—") + '</td><td data-label="Unidad">' + app.esc(product.unit || "Unidad") +
+        '</div></td><td data-label="Riesgo de agotarse"><div class="stock-risk ' + stockRisk.tone +
+        '" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + stockRisk.percent +
+        '" aria-valuetext="' + stockRisk.percent + '% de riesgo; ' + stockRisk.label + '">' +
+        '<span class="stock-risk-track" aria-hidden="true"><span style="width:' + stockRisk.percent + '%"></span></span>' +
+        '<strong>' + stockRisk.percent + '%</strong><small>' + stockRisk.label + '</small></div></td>' +
+        '<td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="Unidad">' + app.esc(product.unit || "Unidad") +
         '</td><td data-label="Cantidad"><div class="inventory-quantity">' + product.stock +
         '</div></td><td data-label="Costo y precio"><div class="inventory-finances"><div><span>Costo</span>' +
         app.moneyPair(product.cost) + '</div><div><span>Venta</span>' + app.moneyPair(product.price) +
@@ -89,16 +94,7 @@
     var inventoryValue = sectionProducts.reduce(function (sum, product) {
       return sum + (Number(product.cost) || 0) * (Number(product.stock) || 0);
     }, 0);
-    var alerts = app.stockAlerts().filter(function (product) {
-      return app.inventoryType(product) === "sale";
-    });
-    var alertContent = alerts.length ? alerts.map(function (product) {
-      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") +
-        '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">Agotado · Existencia: 0</div></div>' +
-        '<button class="button small" data-action="stock" data-id="' + app.esc(product.id) + '">Reponer</button></div>';
-    }).join("") : '<div class="empty">Todos los productos tienen existencias.</div>';
-
-    return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta contenedor, ubicación y cantidades de los productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
+    return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta el estado y las cantidades disponibles de tus productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
       '<section class="inventory-overview" aria-label="Resumen del inventario"><div class="inventory-total"><span>Valor total del inventario</span><strong>' +
       app.moneyPair(inventoryValue) + '</strong></div><div><span>Artículos del inventario</span><strong>' + sectionProducts.length +
       '</strong></div><div><span>Número de contenedores</span><strong>' + Object.keys(containerIds).length + '</strong></div></section>' +
@@ -106,9 +102,8 @@
       'Productos para vender</div><div class="panel-subtitle">' +
       products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar por nombre del producto..." value="' +
       app.esc(app.searchTerm) + '" aria-label="Buscar por nombre del producto"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
-      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-container"><col class="inventory-col-location"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>N.º de contenedor</th><th>Ubicación</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
-      rows + '</tbody></table></div></section><section class="panel"><div class="panel-heading"><div><div class="panel-title">Productos agotados</div><div class="panel-subtitle">Solo aparecen productos con existencia en 0</div></div><span class="status low">' +
-      alerts.length + ' agotados</span></div><div class="alert-list">' + alertContent + '</div></section></div>';
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-risk"><col class="inventory-col-container"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>Riesgo de agotarse</th><th>N.º de contenedor</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
+      rows + '</tbody></table></div></section></div>';
   };
 
   app.renderPos = function () {
