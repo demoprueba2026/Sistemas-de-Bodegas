@@ -65,6 +65,8 @@
     });
     var rows = products.length ? products.map(function (product) {
       var stockRisk = app.stockRisk(product);
+      var unit = product.unit || "Unidad";
+      var unitLabel = unit.trim().toLocaleLowerCase() === "unidad" ? "" : "Unidad";
       return '<tr><td data-label="Descripción"><div class="inventory-description">' +
         app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
         '</div></td><td data-label="Riesgo de agotarse"><div class="stock-risk ' + stockRisk.tone +
@@ -72,7 +74,7 @@
         '" aria-valuetext="' + stockRisk.percent + '% de riesgo; ' + stockRisk.label + '">' +
         '<span class="stock-risk-track" aria-hidden="true"><span style="width:' + stockRisk.percent + '%"></span></span>' +
         '<strong>' + stockRisk.percent + '%</strong><small>' + stockRisk.label + '</small></div></td>' +
-        '<td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="Unidad">' + app.esc(product.unit || "Unidad") +
+        '<td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="' + unitLabel + '">' + app.esc(unit) +
         '</td><td data-label="Cantidad"><div class="inventory-quantity">' + product.stock +
         '</div></td><td data-label="Costo y precio"><div class="inventory-finances"><div><span>Costo</span>' +
         app.moneyPair(product.cost) + '</div><div><span>Venta</span>' + app.moneyPair(product.price) +

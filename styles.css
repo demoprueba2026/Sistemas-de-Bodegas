@@ -318,6 +318,7 @@
       .inventory-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
       .inventory-table tbody td { display: grid; align-content: start; min-width: 0; padding: 0; border: 0; font-size: 15px; }
       .inventory-table tbody td::before { content: attr(data-label); display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
+      .inventory-table tbody td[data-label=""]::before { display: none; }
       .inventory-table tbody td:nth-child(6), .inventory-table tbody td:nth-child(7) { grid-column: 1 / -1; }
       .inventory-table tbody td.empty { display: block; grid-column: 1 / -1; padding: 20px 10px; }
       .inventory-table tbody td.empty::before { content: none; }
