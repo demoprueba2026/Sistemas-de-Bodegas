@@ -17,8 +17,6 @@
       app.esc(product ? product.category : "") + '"></div>' +
       '<div class="field"><label for="prod-container">N.º de contenedor</label><input id="prod-container" name="container" maxlength="40" placeholder="Ej. T345" value="' +
       app.esc(product ? product.container || "" : "") + '"></div>' +
-      '<div class="field"><label for="prod-location">Ubicación</label><input id="prod-location" name="location" maxlength="80" placeholder="Ej. Fila 2, espacio 1" value="' +
-      app.esc(product ? product.location || "" : "") + '"></div>' +
       '<div class="field"><label for="prod-unit">Unidad</label><input id="prod-unit" name="unit" maxlength="30" placeholder="Unidad, caja, kg..." value="' +
       app.esc(product ? product.unit || "Unidad" : "Unidad") + '"></div>' +
       '<div class="currency-input-group" data-currency-group><div class="field"><label for="prod-cost-bs">Costo de compra (Bs.S) *</label><input id="prod-cost-bs" name="cost" data-currency-kind="bs" required type="number" min="0" step="0.01" value="' +
@@ -83,7 +81,7 @@
       name: name,
       category: String(data.get("category") || "").trim() || "Sin categoría",
       container: String(data.get("container") || "").trim(),
-      location: String(data.get("location") || "").trim(),
+      location: existingProduct ? existingProduct.location || "" : "",
       unit: String(data.get("unit") || "").trim() || "Unidad",
       cost: cost,
       price: price,
