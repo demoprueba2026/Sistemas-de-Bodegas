@@ -155,8 +155,7 @@
       app.moneyPair(inventoryValue) + '</strong><small>Al costo de compra</small></div></div>' +
       '<div class="inventory-metric-card inventory-metric-low"><span class="inventory-metric-icon">!</span><div><span>Stock bajo</span><strong>' +
       lowStock + '</strong><small>En o por debajo del mínimo</small></div></div>' +
-      '<div class="inventory-metric-card inventory-metric-out"><div class="inventory-out-summary"><span class="inventory-metric-icon">×</span><div><span>Agotados</span><strong>' +
-      outOfStock + '</strong><small>Sin unidades disponibles</small></div></div><div class="inventory-category-chart-wrap"><span class="inventory-category-chart-title">Stock por categoría</span>' +
+      '<div class="inventory-metric-card inventory-metric-chart"><div class="inventory-category-chart-wrap"><span class="inventory-category-chart-title">Stock por categoría</span>' +
       '<div class="inventory-category-chart" role="img" aria-label="Existencias por categoría: ' +
       (chartCategories.length ? chartCategories.map(function (category) {
         return app.esc(category.name) + ', ' + category.stock + ' unidades';
