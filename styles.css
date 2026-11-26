@@ -191,6 +191,15 @@
     .inventory-metric-value .inventory-metric-icon { background: #eaf1fb; color: #486a9a; font-size: 12px; }
     .inventory-metric-low .inventory-metric-icon { background: var(--amber-pale); color: var(--amber); }
     .inventory-metric-out .inventory-metric-icon { background: var(--red-pale); color: var(--red); }
+    .inventory-metric-out { display: block; }
+    .inventory-out-summary { display: flex !important; align-items: center; gap: 12px; }
+    .inventory-category-chart-wrap { margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--line); }
+    .inventory-category-chart-title { color: var(--ink); font-size: 10px; font-weight: 700; }
+    .inventory-category-chart { height: 66px; margin-top: 5px; display: flex; align-items: stretch; justify-content: space-around; gap: 3px; overflow: hidden; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(to top, transparent 0, transparent 15px, var(--line) 16px); }
+    .inventory-category-bar-item { min-width: 0; height: 100%; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+    .inventory-category-bar { width: min(18px, 58%); min-height: 0; flex: 0 0 auto; border-radius: 3px 3px 0 0; background: #4b89dd; }
+    .inventory-category-label { width: 100%; padding: 3px 1px 2px; overflow: hidden; color: var(--muted); font-size: 8px; line-height: 1; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+    .inventory-category-empty { align-self: center; width: 100%; color: var(--muted); font-size: 9px; text-align: center; }
     .inventory-board { padding: 0; overflow: hidden; }
     .inventory-board .panel-heading { align-items: flex-end; padding: 19px 18px 14px; margin-bottom: 0; }
     .inventory-board .toolbar { flex-wrap: wrap; justify-content: flex-end; }
@@ -459,6 +468,7 @@
     :root[data-theme="dark"] td, :root[data-theme="dark"] .cart-row { border-color: #2b3c32; }
     :root[data-theme="dark"] .inventory-table tbody tr:nth-child(even) { background: #202a23; }
     :root[data-theme="dark"] .inventory-table tbody tr:hover td { background: #293a2e; }
+    :root[data-theme="dark"] .inventory-category-bar { background: #6ea8f4; }
     :root[data-theme="dark"] .summary-line { color: #a8b4ac; }
     :root[data-theme="dark"] .field label { color: #b1bdb5; }
     :root[data-theme="dark"] .select { color: var(--ink); }

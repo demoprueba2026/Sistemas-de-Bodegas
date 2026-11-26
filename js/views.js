@@ -70,6 +70,7 @@
       categorySet[category] = true;
     });
     var categories = Object.keys(categorySet).sort(function (a, b) { return a.localeCompare(b, "es"); });
+    var categoryStock = {};
     var statusFilter = app.inventoryStatusFilter || "all";
     var categoryFilter = app.inventoryCategoryFilter || "all";
     if (categoryFilter !== "all" && !categorySet[categoryFilter]) {
@@ -80,6 +81,8 @@
     var lowStock = 0;
     sectionProducts.forEach(function (product) {
       var tone = app.stockRisk(product).tone;
+      var category = String(product.category || "Sin categoría").trim() || "Sin categoría";
+      categoryStock[category] = (categoryStock[category] || 0) + Math.max(0, Number(product.stock) || 0);
       if (tone === "critical") outOfStock++;
       else if (tone === "warning") lowStock++;
     });
@@ -127,6 +130,23 @@
       return '<option value="' + app.esc(category) + '"' +
         (categoryFilter === category ? " selected" : "") + '>' + app.esc(category) + '</option>';
     }).join("");
+    var chartCategories = Object.keys(categoryStock).map(function (category) {
+      return { name: category, stock: categoryStock[category] };
+    }).sort(function (a, b) { return b.stock - a.stock; });
+    if (chartCategories.length > 6) {
+      var otherStock = chartCategories.slice(5).reduce(function (sum, category) { return sum + category.stock; }, 0);
+      chartCategories = chartCategories.slice(0, 5);
+      chartCategories.push({ name: "Otros", stock: otherStock });
+    }
+    var maxCategoryStock = chartCategories.reduce(function (max, category) {
+      return Math.max(max, category.stock);
+    }, 0);
+    var categoryChart = chartCategories.length ? chartCategories.map(function (category) {
+      var barHeight = maxCategoryStock > 0 ? Math.max(category.stock > 0 ? 5 : 0, category.stock / maxCategoryStock * 100) : 0;
+      return '<div class="inventory-category-bar-item" title="' + app.esc(category.name) + ': ' +
+        category.stock + ' unidades"><span class="inventory-category-bar" style="height:' + barHeight +
+        '%"></span><span class="inventory-category-label">' + app.esc(category.name) + '</span></div>';
+    }).join("") : '<span class="inventory-category-empty">No hay datos por categoría</span>';
     return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta el estado y las cantidades disponibles de tus productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
       '<section class="inventory-metrics" aria-label="Resumen del inventario">' +
       '<div class="inventory-metric-card"><span class="inventory-metric-icon">▤</span><div><span>Productos</span><strong>' +
@@ -135,8 +155,12 @@
       app.moneyPair(inventoryValue) + '</strong><small>Al costo de compra</small></div></div>' +
       '<div class="inventory-metric-card inventory-metric-low"><span class="inventory-metric-icon">!</span><div><span>Stock bajo</span><strong>' +
       lowStock + '</strong><small>En o por debajo del mínimo</small></div></div>' +
-      '<div class="inventory-metric-card inventory-metric-out"><span class="inventory-metric-icon">×</span><div><span>Agotados</span><strong>' +
-      outOfStock + '</strong><small>Sin unidades disponibles</small></div></div></section>' +
+      '<div class="inventory-metric-card inventory-metric-out"><div class="inventory-out-summary"><span class="inventory-metric-icon">×</span><div><span>Agotados</span><strong>' +
+      outOfStock + '</strong><small>Sin unidades disponibles</small></div></div><div class="inventory-category-chart-wrap"><span class="inventory-category-chart-title">Stock por categoría</span>' +
+      '<div class="inventory-category-chart" role="img" aria-label="Existencias por categoría: ' +
+      (chartCategories.length ? chartCategories.map(function (category) {
+        return app.esc(category.name) + ', ' + category.stock + ' unidades';
+      }).join("; ") : "sin datos") + '">' + categoryChart + '</div></div></div></section>' +
       '<div class="page-grid"><section class="panel inventory-board"><div class="panel-heading"><div><div class="panel-title">' +
       'Productos para vender</div><div class="panel-subtitle">' +
       products.length + ' de ' + sectionProducts.length + ' productos</div></div><div class="toolbar inventory-toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar producto..." value="' +
