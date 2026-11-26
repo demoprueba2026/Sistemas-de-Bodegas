@@ -163,13 +163,15 @@
     .inventory-table th, .inventory-table td { padding-top: 13px; padding-bottom: 13px; }
     .inventory-table { width: 100%; min-width: 0; table-layout: fixed; }
     .inventory-table td { font-size: 14px; white-space: normal; overflow-wrap: anywhere; vertical-align: middle; }
-    .inventory-col-description { width: 20%; }
+    .inventory-col-number { width: 5%; }
+    .inventory-col-description { width: 16%; }
+    .inventory-col-supplier { width: 12%; }
     .inventory-col-risk { width: 14%; }
-    .inventory-col-container { width: 13%; }
-    .inventory-col-unit { width: 8%; }
-    .inventory-col-quantity { width: 8%; }
-    .inventory-col-finance { width: 16%; }
-    .inventory-col-actions { width: 21%; }
+    .inventory-col-container { width: 10%; }
+    .inventory-col-unit { width: 7%; }
+    .inventory-col-quantity { width: 7%; }
+    .inventory-col-finance { width: 15%; }
+    .inventory-col-actions { width: 14%; }
     .inventory-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
     .inventory-actions .button { padding: 8px 9px; font-size: 12px; white-space: nowrap; flex: 0 0 auto; }
     .inventory-heading { align-items: center; }
@@ -216,6 +218,7 @@
     .inventory-table td { padding: 12px 14px; border-color: #e7e9e7; vertical-align: middle; }
     .inventory-table tbody tr:nth-child(even) { background: #f3f2f4; }
     .inventory-table tbody tr:hover td { background: #e7efe8; }
+    .inventory-row-number { color: var(--muted); font-size: 12px !important; font-weight: 700; text-align: center; }
     .inventory-description { font-size: 15px; font-weight: 700; }
     .inventory-table .table-product-meta { font-size: 13px; }
     .stock-risk { display: grid; grid-template-columns: minmax(42px, 1fr) auto; align-items: center; gap: 5px 8px; max-width: 130px; }
@@ -345,7 +348,7 @@
       .inventory-table tbody td { display: grid; align-content: start; min-width: 0; padding: 0; border: 0; font-size: 15px; }
       .inventory-table tbody td::before { content: attr(data-label); display: block; margin-bottom: 5px; color: var(--muted); font-size: 12px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; }
       .inventory-table tbody td[data-label=""]::before { display: none; }
-      .inventory-table tbody td:nth-child(6), .inventory-table tbody td:nth-child(7) { grid-column: 1 / -1; }
+      .inventory-table tbody td:nth-child(8), .inventory-table tbody td:nth-child(9) { grid-column: 1 / -1; }
       .inventory-table tbody td.empty { display: block; grid-column: 1 / -1; padding: 20px 10px; }
       .inventory-table tbody td.empty::before { content: none; }
       .inventory-actions .button { padding: 9px 11px; font-size: 13px; }

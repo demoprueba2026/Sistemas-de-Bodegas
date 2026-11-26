@@ -15,6 +15,8 @@
       app.esc(product ? product.barcode : "") + '"></div>' +
       '<div class="field"><label for="prod-category">Categoría</label><input id="prod-category" name="category" maxlength="40" placeholder="Abarrotes" value="' +
       app.esc(product ? product.category : "") + '"></div>' +
+      '<div class="field"><label for="prod-supplier">Proveedor</label><input id="prod-supplier" name="supplier" maxlength="80" placeholder="Ej. Distribuidora Central" value="' +
+      app.esc(product ? product.supplier || "" : "") + '"></div>' +
       '<div class="field"><label for="prod-container">N.º de contenedor</label><input id="prod-container" name="container" maxlength="40" placeholder="Ej. T345" value="' +
       app.esc(product ? product.container || "" : "") + '"></div>' +
       '<div class="field"><label for="prod-unit">Unidad</label><input id="prod-unit" name="unit" maxlength="30" placeholder="Unidad, caja, kg..." value="' +
@@ -80,6 +82,7 @@
       barcode: barcode || (existingProduct ? existingProduct.barcode : "SIN-COD-" + Date.now()),
       name: name,
       category: String(data.get("category") || "").trim() || "Sin categoría",
+      supplier: String(data.get("supplier") || "").trim(),
       container: String(data.get("container") || "").trim(),
       location: existingProduct ? existingProduct.location || "" : "",
       unit: String(data.get("unit") || "").trim() || "Unidad",
@@ -102,6 +105,7 @@
         p_price: updatedValues.price,
         p_stock: updatedValues.stock,
         p_stock_min: updatedValues.min,
+        p_supplier: updatedValues.supplier,
         p_container: updatedValues.container,
         p_location: updatedValues.location,
         p_unit: updatedValues.unit
@@ -212,12 +216,14 @@
   };
 
   app.exportCsv = function () {
-    var rows = [["Descripción", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Mínimo"]];
+    var rows = [["N.º", "Descripción", "Proveedor", "N.º de contenedor", "Ubicación", "Unidad", "Cantidad", "Tipo de inventario", "Categoría", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)", "Mínimo"]];
     app.state.products.filter(function (product) {
       return app.inventoryType(product) === "sale";
-    }).forEach(function (product) {
+    }).forEach(function (product, index) {
       rows.push([
+        index + 1,
         product.name,
+        product.supplier || "",
         product.container || "",
         product.location || "",
         product.unit || "Unidad",

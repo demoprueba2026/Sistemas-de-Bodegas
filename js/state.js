@@ -72,6 +72,7 @@
       stock: Number(row.stock) || 0,
       min: Number(row.stock_min) || 0,
       inventoryType: row.inventory_type || "sale",
+      supplier: row.supplier || "",
       container: row.container || "",
       location: row.location || "",
       unit: row.unit || "Unidad"

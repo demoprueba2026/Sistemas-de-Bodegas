@@ -22,6 +22,7 @@ create table if not exists public.products (
   price numeric(14, 2) not null default 0 check (price >= 0),
   stock integer not null default 0 check (stock >= 0),
   stock_min integer not null default 0 check (stock_min >= 0),
+  supplier text not null default '',
   inventory_type text not null default 'sale' check (inventory_type in ('sale', 'ingredient')),
   active boolean not null default true,
   created_at timestamptz not null default now(),

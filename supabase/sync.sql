@@ -5,6 +5,7 @@ alter table public.products
   add column if not exists inventory_type text not null default 'sale',
   add column if not exists active boolean not null default true,
   add column if not exists stock_min integer not null default 0,
+  add column if not exists supplier text not null default '',
   add column if not exists container text not null default '',
   add column if not exists location text not null default '',
   add column if not exists unit text not null default 'Unidad';
@@ -159,6 +160,7 @@ create or replace function public.save_product(
   p_price numeric,
   p_stock integer,
   p_stock_min integer,
+  p_supplier text,
   p_container text,
   p_location text,
   p_unit text
@@ -188,12 +190,12 @@ begin
   if p_product_id is null then
     insert into public.products (
       owner_id, barcode, name, category, emoji, cost, price, stock, stock_min,
-      inventory_type, container, location, unit
+      supplier, inventory_type, container, location, unit
     )
     values (
       v_owner_id, trim(p_barcode), trim(p_name), coalesce(nullif(trim(p_category), ''), 'Sin categoria'),
       coalesce(nullif(trim(p_emoji), ''), '📦'), p_cost, p_price, p_stock, p_stock_min,
-      'sale', coalesce(p_container, ''), coalesce(p_location, ''),
+      coalesce(p_supplier, ''), 'sale', coalesce(p_container, ''), coalesce(p_location, ''),
       coalesce(nullif(trim(p_unit), ''), 'Unidad')
     )
     returning * into v_product;
@@ -226,6 +228,7 @@ begin
         price = p_price,
         stock = p_stock,
         stock_min = p_stock_min,
+        supplier = coalesce(p_supplier, ''),
         container = coalesce(p_container, ''),
         location = coalesce(p_location, ''),
         unit = coalesce(nullif(trim(p_unit), ''), 'Unidad')
@@ -448,10 +451,10 @@ begin
 end;
 $function$;
 
-revoke all on function public.save_product(uuid, text, text, text, text, numeric, numeric, integer, integer, text, text, text) from public, anon;
+revoke all on function public.save_product(uuid, text, text, text, text, numeric, numeric, integer, integer, text, text, text, text) from public, anon;
 revoke all on function public.receive_stock(uuid, integer) from public, anon;
 revoke all on function public.register_sale(text, numeric, jsonb) from public, anon;
-grant execute on function public.save_product(uuid, text, text, text, text, numeric, numeric, integer, integer, text, text, text) to authenticated;
+grant execute on function public.save_product(uuid, text, text, text, text, numeric, numeric, integer, integer, text, text, text, text) to authenticated;
 grant execute on function public.receive_stock(uuid, integer) to authenticated;
 grant execute on function public.register_sale(text, numeric, jsonb) to authenticated;
 

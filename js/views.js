@@ -90,7 +90,8 @@
       var stockRisk = app.stockRisk(product);
       var productCategory = String(product.category || "Sin categoría").trim() || "Sin categoría";
       var searchable = app.normalizeSearch(
-        product.name + " " + (product.barcode || "") + " " + productCategory + " " + (product.container || "")
+        product.name + " " + (product.barcode || "") + " " + productCategory + " " +
+        (product.supplier || "") + " " + (product.container || "")
       );
       var matchesStatus = statusFilter === "all" ||
         (statusFilter === "low" && stockRisk.tone === "warning") ||
@@ -98,13 +99,15 @@
       var matchesCategory = categoryFilter === "all" || productCategory === categoryFilter;
       return matchesStatus && matchesCategory && searchable.indexOf(query) !== -1;
     });
-    var rows = products.length ? products.map(function (product) {
+    var rows = products.length ? products.map(function (product, index) {
       var stockRisk = app.stockRisk(product);
       var unit = product.unit || "Unidad";
       var unitLabel = unit.trim().toLocaleLowerCase() === "unidad" ? "" : "Unidad";
-      return '<tr><td data-label="Descripción"><div class="inventory-description">' +
+      return '<tr><td data-label="N.º" class="inventory-row-number">' + (index + 1) +
+        '</td><td data-label="Descripción"><div class="inventory-description">' +
         app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
-        '</div></td><td data-label="Riesgo de agotarse"><div class="stock-risk ' + stockRisk.tone +
+        '</div></td><td data-label="Proveedor">' + app.esc(product.supplier || "—") +
+        '</td><td data-label="Riesgo de agotarse"><div class="stock-risk ' + stockRisk.tone +
         '" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + stockRisk.percent +
         '" aria-valuetext="' + (stockRisk.minimum > 0
           ? stockRisk.percent + '% del stock mínimo; ' + stockRisk.label
@@ -118,7 +121,7 @@
         '</div></div></td><td data-label="Acciones"><div class="inventory-actions"><button class="button small" data-action="stock" data-id="' + app.esc(product.id) +
         '">＋ Entrada</button><button class="button small danger" data-action="delete-product" data-id="' +
         app.esc(product.id) + '" aria-label="Eliminar ' + app.esc(product.name) + '">Eliminar</button></div></td></tr>';
-    }).join("") : '<tr><td colspan="7" class="empty">' +
+    }).join("") : '<tr><td colspan="9" class="empty">' +
       (query || statusFilter !== "all" || categoryFilter !== "all"
         ? "No hay productos que coincidan con los filtros seleccionados."
         : "Todavía no hay productos en el inventario.") + '</td></tr>';
@@ -173,7 +176,7 @@
       '" aria-pressed="' + (statusFilter === "low" ? "true" : "false") + '">Stock bajo <span>' + lowStock + '</span></button>' +
       '<button type="button" data-inventory-status="out" class="' + (statusFilter === "out" ? "active" : "") +
       '" aria-pressed="' + (statusFilter === "out" ? "true" : "false") + '">Agotados <span>' + outOfStock + '</span></button></div>' +
-      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-risk"><col class="inventory-col-container"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>Stock vs. mínimo</th><th>N.º de contenedor</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-number"><col class="inventory-col-description"><col class="inventory-col-supplier"><col class="inventory-col-risk"><col class="inventory-col-container"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>N.º</th><th>Descripción</th><th>Proveedor</th><th>Stock vs. mínimo</th><th>N.º de contenedor</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section></div>';
   };
 
