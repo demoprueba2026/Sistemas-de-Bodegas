@@ -173,6 +173,13 @@
     else if (action === "export") app.exportCsv();
   });
 
+  document.addEventListener("click", function (event) {
+    var inventoryFilter = event.target.closest("[data-inventory-status]");
+    if (!inventoryFilter) return;
+    app.inventoryStatusFilter = inventoryFilter.dataset.inventoryStatus;
+    app.render();
+  });
+
   document.addEventListener("input", function (event) {
     var inputId = event.target.id;
     if (event.target.matches("[data-currency-kind]")) {
@@ -212,6 +219,10 @@
         return;
       }
       app.reportDate = event.target.value;
+      app.render();
+    }
+    if (event.target.id === "inventory-category") {
+      app.inventoryCategoryFilter = event.target.value;
       app.render();
     }
   });

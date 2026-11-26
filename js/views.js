@@ -32,7 +32,7 @@
     var alertRows = alerts.length ? alerts.slice(0, 5).map(function (product) {
       var stock = Math.max(0, Number(product.stock) || 0);
       var label = stock === 0 ? "Agotado" : "Existencia baja";
-      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") + '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">' + app.esc(product.category) + '</div></div><span class="stock-pill">' + label + ' · ' + stock + ' ' + (stock === 1 ? "unidad" : "unidades") + '</span></div>';
+      return '<div class="alert-row"><span class="product-thumb">' + app.esc(product.emoji || "📦") + '</span><div><div class="alert-name">' + app.esc(product.name) + '</div><div class="alert-category">' + app.esc(product.category) + '</div></div><span class="stock-pill' + (stock === 0 ? " out" : "") + '">' + label + ' · ' + stock + ' ' + (stock === 1 ? "unidad" : "unidades") + '</span></div>';
     }).join("") : '<div class="empty">Todo en orden. No hay productos con existencia baja.</div>';
 
     var recent = state.sales.filter(function (sale) { return !sale.voided; })
@@ -61,9 +61,39 @@
   app.renderInventory = function () {
     var state = app.state;
     var query = app.normalizeSearch(app.searchTerm);
-    var products = state.products.filter(function (product) {
-      return app.inventoryType(product) === "sale" &&
-        app.normalizeSearch(product.name).indexOf(query) !== -1;
+    var sectionProducts = state.products.filter(function (product) {
+      return app.inventoryType(product) === "sale";
+    });
+    var categorySet = {};
+    sectionProducts.forEach(function (product) {
+      var category = String(product.category || "Sin categoría").trim() || "Sin categoría";
+      categorySet[category] = true;
+    });
+    var categories = Object.keys(categorySet).sort(function (a, b) { return a.localeCompare(b, "es"); });
+    var statusFilter = app.inventoryStatusFilter || "all";
+    var categoryFilter = app.inventoryCategoryFilter || "all";
+    if (categoryFilter !== "all" && !categorySet[categoryFilter]) {
+      categoryFilter = "all";
+      app.inventoryCategoryFilter = "all";
+    }
+    var outOfStock = 0;
+    var lowStock = 0;
+    sectionProducts.forEach(function (product) {
+      var tone = app.stockRisk(product).tone;
+      if (tone === "critical") outOfStock++;
+      else if (tone === "warning") lowStock++;
+    });
+    var products = sectionProducts.filter(function (product) {
+      var stockRisk = app.stockRisk(product);
+      var productCategory = String(product.category || "Sin categoría").trim() || "Sin categoría";
+      var searchable = app.normalizeSearch(
+        product.name + " " + (product.barcode || "") + " " + productCategory + " " + (product.container || "")
+      );
+      var matchesStatus = statusFilter === "all" ||
+        (statusFilter === "low" && stockRisk.tone === "warning") ||
+        (statusFilter === "out" && stockRisk.tone === "critical");
+      var matchesCategory = categoryFilter === "all" || productCategory === categoryFilter;
+      return matchesStatus && matchesCategory && searchable.indexOf(query) !== -1;
     });
     var rows = products.length ? products.map(function (product) {
       var stockRisk = app.stockRisk(product);
@@ -73,7 +103,9 @@
         app.esc(product.name) + '</div><div class="table-product-meta">' + app.esc(product.category) +
         '</div></td><td data-label="Riesgo de agotarse"><div class="stock-risk ' + stockRisk.tone +
         '" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + stockRisk.percent +
-        '" aria-valuetext="' + stockRisk.percent + '% de riesgo; ' + stockRisk.label + '">' +
+        '" aria-valuetext="' + (stockRisk.minimum > 0
+          ? stockRisk.percent + '% del stock mínimo; ' + stockRisk.label
+          : stockRisk.label + '; sin stock mínimo configurado') + '">' +
         '<span class="stock-risk-track" aria-hidden="true"><span style="width:' + stockRisk.percent + '%"></span></span>' +
         '<strong>' + stockRisk.percent + '%</strong><small>' + stockRisk.label + '</small></div></td>' +
         '<td data-label="N.º de contenedor">' + app.esc(product.container || "—") + '</td><td data-label="' + unitLabel + '">' + app.esc(unit) +
@@ -84,29 +116,41 @@
         '">＋ Entrada</button><button class="button small danger" data-action="delete-product" data-id="' +
         app.esc(product.id) + '" aria-label="Eliminar ' + app.esc(product.name) + '">Eliminar</button></div></td></tr>';
     }).join("") : '<tr><td colspan="7" class="empty">' +
-      (query ? "No encontramos productos con ese nombre. Prueba otra búsqueda." :
-        "Todavía no hay productos en el inventario.") + '</td></tr>';
+      (query || statusFilter !== "all" || categoryFilter !== "all"
+        ? "No hay productos que coincidan con los filtros seleccionados."
+        : "Todavía no hay productos en el inventario.") + '</td></tr>';
 
-    var sectionProducts = state.products.filter(function (product) {
-      return app.inventoryType(product) === "sale";
-    });
-    var containerIds = {};
-    sectionProducts.forEach(function (product) {
-      var container = String(product.container || "").trim();
-      if (container) containerIds[container.toLowerCase()] = true;
-    });
     var inventoryValue = sectionProducts.reduce(function (sum, product) {
       return sum + (Number(product.cost) || 0) * (Number(product.stock) || 0);
     }, 0);
+    var categoryOptions = categories.map(function (category) {
+      return '<option value="' + app.esc(category) + '"' +
+        (categoryFilter === category ? " selected" : "") + '>' + app.esc(category) + '</option>';
+    }).join("");
     return '<div class="page-heading inventory-heading"><div><h1>Lista de inventario de almacén</h1><p class="subtitle">Consulta el estado y las cantidades disponibles de tus productos.</p></div><div class="inventory-tools"><button class="button" data-action="inventory-selection">☷ Lista de selección de inventario</button><button class="button" data-action="container-search">⌕ Búsqueda de contenedores</button><button class="button primary" data-action="add-product">＋ Nuevo producto</button></div></div>' +
-      '<section class="inventory-overview" aria-label="Resumen del inventario"><div class="inventory-total"><span>Valor total del inventario</span><strong>' +
-      app.moneyPair(inventoryValue) + '</strong></div><div><span>Artículos del inventario</span><strong>' + sectionProducts.length +
-      '</strong></div><div><span>Número de contenedores</span><strong>' + Object.keys(containerIds).length + '</strong></div></section>' +
+      '<section class="inventory-metrics" aria-label="Resumen del inventario">' +
+      '<div class="inventory-metric-card"><span class="inventory-metric-icon">▤</span><div><span>Productos</span><strong>' +
+      sectionProducts.length + '</strong><small>En el inventario</small></div></div>' +
+      '<div class="inventory-metric-card inventory-metric-value"><span class="inventory-metric-icon">Bs</span><div><span>Valor del inventario</span><strong>' +
+      app.moneyPair(inventoryValue) + '</strong><small>Al costo de compra</small></div></div>' +
+      '<div class="inventory-metric-card inventory-metric-low"><span class="inventory-metric-icon">!</span><div><span>Stock bajo</span><strong>' +
+      lowStock + '</strong><small>En o por debajo del mínimo</small></div></div>' +
+      '<div class="inventory-metric-card inventory-metric-out"><span class="inventory-metric-icon">×</span><div><span>Agotados</span><strong>' +
+      outOfStock + '</strong><small>Sin unidades disponibles</small></div></div></section>' +
       '<div class="page-grid"><section class="panel inventory-board"><div class="panel-heading"><div><div class="panel-title">' +
       'Productos para vender</div><div class="panel-subtitle">' +
-      products.length + ' de ' + sectionProducts.length + ' artículos</div></div><div class="toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar por nombre del producto..." value="' +
-      app.esc(app.searchTerm) + '" aria-label="Buscar por nombre del producto"><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
-      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-risk"><col class="inventory-col-container"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>Riesgo de agotarse</th><th>N.º de contenedor</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
+      products.length + ' de ' + sectionProducts.length + ' productos</div></div><div class="toolbar inventory-toolbar"><input class="search" id="inventory-search" placeholder="⌕  Buscar producto..." value="' +
+      app.esc(app.searchTerm) + '" aria-label="Buscar por producto">' +
+      '<select class="select inventory-category-filter" id="inventory-category" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option>' +
+      categoryOptions + '</select><button class="button small" data-action="export">Exportar CSV</button></div></div>' +
+      '<div class="inventory-filter-tabs" role="group" aria-label="Filtrar por estado">' +
+      '<button type="button" data-inventory-status="all" class="' + (statusFilter === "all" ? "active" : "") +
+      '" aria-pressed="' + (statusFilter === "all" ? "true" : "false") + '">Todos <span>' + sectionProducts.length + '</span></button>' +
+      '<button type="button" data-inventory-status="low" class="' + (statusFilter === "low" ? "active" : "") +
+      '" aria-pressed="' + (statusFilter === "low" ? "true" : "false") + '">Stock bajo <span>' + lowStock + '</span></button>' +
+      '<button type="button" data-inventory-status="out" class="' + (statusFilter === "out" ? "active" : "") +
+      '" aria-pressed="' + (statusFilter === "out" ? "true" : "false") + '">Agotados <span>' + outOfStock + '</span></button></div>' +
+      '<div class="table-wrap inventory-table-wrap"><table class="inventory-table"><colgroup><col class="inventory-col-description"><col class="inventory-col-risk"><col class="inventory-col-container"><col class="inventory-col-unit"><col class="inventory-col-quantity"><col class="inventory-col-finance"><col class="inventory-col-actions"></colgroup><thead><tr><th>Descripción</th><th>Stock vs. mínimo</th><th>N.º de contenedor</th><th>Unidad</th><th>Cantidad</th><th>Costo / precio</th><th>Acciones</th></tr></thead><tbody>' +
       rows + '</tbody></table></div></section></div>';
   };
 

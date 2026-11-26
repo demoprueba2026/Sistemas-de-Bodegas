@@ -228,31 +228,31 @@
   app.stockAlerts = function () {
     return app.state.products.filter(function (product) {
       return app.inventoryType(product) === "sale" &&
-        app.stockRisk(product).tone === "critical";
+        app.stockRisk(product).tone !== "healthy";
     });
   };
 
   app.stockRisk = function (product) {
     var stock = Math.max(0, Number(product.stock) || 0);
-    var percent;
+    var minimum = Math.max(0, Number(product.min) || 0);
+    var percent = minimum > 0
+      ? Math.min(100, Math.round(stock / minimum * 100))
+      : (stock > 0 ? 100 : 0);
     var tone;
     var label;
 
-    if (stock < 10) {
-      percent = Math.round(90 + (9 - stock) * (10 / 9));
+    if (stock === 0) {
       tone = "critical";
-      label = "Bajo";
-    } else if (stock <= 30) {
-      percent = Math.round(90 - (stock - 10) * 2);
+      label = "Agotado";
+    } else if (minimum > 0 && stock <= minimum) {
       tone = "warning";
-      label = "Medio";
+      label = "Stock bajo";
     } else {
-      percent = Math.max(0, Math.round(50 - (stock - 30) * 1.25));
       tone = "healthy";
       label = "Óptimo";
     }
 
-    return { percent: percent, tone: tone, label: label };
+    return { percent: percent, tone: tone, label: label, minimum: minimum };
   };
 
   app.notify = function (message) {
