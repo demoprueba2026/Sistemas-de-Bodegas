@@ -170,7 +170,7 @@
       app.render();
     } else if (action === "close-modal") document.getElementById("modal-root").innerHTML = "";
     else if (action === "print-receipt") window.print();
-    else if (action === "export-pdf") app.exportInventoryPdf();
+    else if (action === "export-excel") app.exportExcel();
   });
 
   document.addEventListener("click", function (event) {

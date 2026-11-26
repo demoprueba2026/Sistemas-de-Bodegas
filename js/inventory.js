@@ -215,18 +215,43 @@
     if (!refreshFailed) app.notify("Producto eliminado del inventario.");
   };
 
-  app.exportInventoryPdf = function () {
-    var previousTitle = document.title;
-    var date = new Intl.DateTimeFormat("es-VE").format(new Date()).replace(/\//g, "-");
-    var restorePrintState = function () {
-      document.body.classList.remove("inventory-printing");
-      document.title = previousTitle;
-    };
+  app.exportExcel = function () {
+    var rows = [["N.º", "Descripción", "Proveedor", "Categoría", "N.º de contenedor", "Unidad",
+      "Existencia", "Stock mínimo", "Costo (Bs.S)", "Costo (USD)", "Precio (Bs.S)", "Precio (USD)"]];
+    var products = app.state.products.filter(function (product) {
+      return app.inventoryType(product) === "sale";
+    });
 
-    document.title = "Inventario-" + date;
-    document.body.classList.add("inventory-printing");
-    window.addEventListener("afterprint", restorePrintState, { once: true });
-    window.print();
+    products.forEach(function (product, index) {
+      rows.push([
+        index + 1,
+        product.name,
+        product.supplier || "",
+        product.category || "Sin categoría",
+        product.container || "",
+        product.unit || "Unidad",
+        Number(product.stock) || 0,
+        Number(product.min) || 0,
+        Number(product.cost) || 0,
+        (Number(product.cost) / app.exchangeRate() || 0).toFixed(2),
+        Number(product.price) || 0,
+        (Number(product.price) / app.exchangeRate() || 0).toFixed(2)
+      ]);
+    });
+
+    var csv = "\uFEFF" + rows.map(function (row) {
+      return row.map(function (cell) {
+        var value = String(cell == null ? "" : cell);
+        if (typeof cell === "string" && /^[\s]*[=+\-@]/.test(value)) value = "'" + value;
+        return '"' + value.replace(/"/g, '""') + '"';
+      }).join(",");
+    }).join("\r\n");
+    var link = document.createElement("a");
+    var fileUrl = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    link.href = fileUrl;
+    link.download = "inventario-mercado.csv";
+    link.click();
+    window.setTimeout(function () { URL.revokeObjectURL(fileUrl); }, 0);
   };
 
   app.openInventorySelection = function () {
