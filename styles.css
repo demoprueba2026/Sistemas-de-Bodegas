@@ -434,6 +434,8 @@
       .receipt { border: 0; background: #fff; color: #111; }
       .inventory-print-document, .inventory-print-document * { visibility: visible !important; }
       .inventory-print-document { position: absolute; inset: 0; width: 100%; max-width: none; margin: 0; padding: 0; background: #fff; color: #111; }
+      .inventory-print-document > .page-heading,
+      .inventory-print-document > .inventory-metrics { display: none !important; }
       .inventory-print-document .inventory-tools,
       .inventory-print-document .inventory-toolbar,
       .inventory-print-document .inventory-filter-tabs,
