@@ -432,6 +432,28 @@
       .modal { box-shadow: none; width: 80mm; padding: 0; }
       .modal-head, .modal-actions { display: none !important; }
       .receipt { border: 0; background: #fff; color: #111; }
+      .inventory-print-document, .inventory-print-document * { visibility: visible !important; }
+      .inventory-print-document { position: absolute; inset: 0; width: 100%; max-width: none; margin: 0; padding: 0; background: #fff; color: #111; }
+      .inventory-print-document .inventory-tools,
+      .inventory-print-document .inventory-toolbar,
+      .inventory-print-document .inventory-filter-tabs,
+      .inventory-print-document .inventory-actions { display: none !important; }
+      .inventory-print-document .inventory-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0 0 12px; }
+      .inventory-print-document .inventory-metric-card,
+      .inventory-print-document .panel { box-shadow: none; break-inside: avoid; }
+      .inventory-print-document .inventory-board { overflow: visible; }
+      .inventory-print-document .inventory-table-wrap { overflow: visible !important; }
+      .inventory-print-document .inventory-table { display: table !important; width: 100%; }
+      .inventory-print-document .inventory-table thead { display: table-header-group !important; }
+      .inventory-print-document .inventory-table tbody { display: table-row-group !important; }
+      .inventory-print-document .inventory-table tbody tr { display: table-row !important; }
+      .inventory-print-document .inventory-table tbody td { display: table-cell !important; padding: 6px 5px; font-size: 9px; }
+      .inventory-print-document .inventory-table tbody td::before { display: none !important; }
+      .inventory-print-document .inventory-table th { padding: 7px 5px; font-size: 8px; }
+      .inventory-print-document .inventory-table tbody tr:nth-child(even) { background: #f3f2f4 !important; }
+      .inventory-print-document .inventory-table th:last-child,
+      .inventory-print-document .inventory-table td:last-child { display: none !important; }
+      body.inventory-printing .app { display: block; min-height: 0; }
     }
     :root[data-theme="dark"] {
       color-scheme: dark;
