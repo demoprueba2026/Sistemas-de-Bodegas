@@ -24,13 +24,17 @@
   var errorMessage = document.getElementById("login-error");
   var togglePassword = document.getElementById("toggle-password");
   var loginForm = document.getElementById("login-form");
+  var signupForm = document.getElementById("signup-form");
   var recoveryForm = document.getElementById("recovery-form");
   var resetForm = document.getElementById("reset-form");
+  var signupMessage = document.getElementById("signup-message");
+  var signupSubmit = document.getElementById("signup-submit");
   var recoveryMessage = document.getElementById("recovery-message");
   var resetMessage = document.getElementById("reset-message");
 
   function showForm(formToShow) {
     loginForm.hidden = formToShow !== loginForm;
+    signupForm.hidden = formToShow !== signupForm;
     recoveryForm.hidden = formToShow !== recoveryForm;
     resetForm.hidden = formToShow !== resetForm;
   }
@@ -64,6 +68,55 @@
       errorMessage.textContent = "No se pudo verificar el acceso. Revisa tus datos e inténtalo de nuevo.";
     }).finally(function () {
       submitButton.disabled = false;
+    });
+  });
+
+  document.getElementById("show-signup").addEventListener("click", function () {
+    signupMessage.textContent = "";
+    signupMessage.style.color = "";
+    signupSubmit.hidden = false;
+    showForm(signupForm);
+    document.getElementById("signup-name").focus();
+  });
+
+  document.getElementById("signup-back-to-login").addEventListener("click", function () {
+    showForm(loginForm);
+  });
+
+  signupForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    signupMessage.textContent = "";
+    signupMessage.style.color = "";
+    var name = document.getElementById("signup-name").value.trim();
+    var businessName = document.getElementById("signup-business").value.trim();
+    var email = document.getElementById("signup-email").value.trim().toLowerCase();
+    var signupPassword = document.getElementById("signup-password").value;
+    var confirmPassword = document.getElementById("signup-confirm-password").value;
+
+    if (!name || !businessName) {
+      signupMessage.textContent = "Escribe tu nombre y el nombre de tu negocio.";
+      return;
+    }
+
+    if (signupPassword !== confirmPassword) {
+      signupMessage.textContent = "Las contraseñas no coinciden.";
+      return;
+    }
+
+    signupSubmit.disabled = true;
+    window.MercadoAuth.register(name, businessName, email, signupPassword).then(function (result) {
+      if (result.authenticated) {
+        window.location.replace("index.html");
+        return;
+      }
+      signupMessage.style.color = "var(--green)";
+      signupMessage.textContent = "Cuenta creada. Revisa tu correo para confirmar la dirección y luego inicia sesión.";
+      signupSubmit.hidden = true;
+    }).catch(function (error) {
+      console.error("No se pudo crear la cuenta:", error);
+      signupMessage.textContent = "No se pudo crear la cuenta. Verifica los datos e inténtalo de nuevo.";
+    }).finally(function () {
+      signupSubmit.disabled = false;
     });
   });
 

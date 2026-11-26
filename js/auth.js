@@ -37,6 +37,24 @@
         return true;
       });
     },
+    register: function (name, businessName, email, password) {
+      if (!supabase) return Promise.reject(new Error("Supabase no está disponible."));
+      return supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: name,
+            business_name: businessName
+          }
+        }
+      }).then(function (result) {
+        if (result.error) throw result.error;
+        var session = result.data && result.data.session;
+        if (session) window.sessionStorage.setItem(SESSION_KEY, SESSION_VALUE);
+        return { authenticated: Boolean(session) };
+      });
+    },
     logout: function () {
       window.sessionStorage.removeItem(SESSION_KEY);
       var signOut = supabase ? supabase.auth.signOut() : Promise.resolve();
@@ -49,16 +67,27 @@
       });
     },
     getAccountInfo: function () {
-      if (!supabase) return Promise.resolve({ name: "Administrador", email: "admin@mercado.local" });
+      if (!supabase) return Promise.resolve({
+        name: "Administrador",
+        email: "admin@mercado.local",
+        businessName: "Mi Mercado"
+      });
       return supabase.auth.getUser().then(function (result) {
         var user = result.data && result.data.user;
-        if (!user) return { name: "Administrador", email: "admin@mercado.local" };
+        if (!user) return {
+          name: "Administrador",
+          email: "admin@mercado.local",
+          businessName: "Mi Mercado"
+        };
         var name = user.user_metadata && user.user_metadata.full_name
           ? user.user_metadata.full_name
           : "Administrador";
-        return { name: name, email: user.email || "Usuario autorizado" };
+        var businessName = user.user_metadata && user.user_metadata.business_name
+          ? user.user_metadata.business_name
+          : "Mi Mercado";
+        return { name: name, email: user.email || "Usuario autorizado", businessName: businessName };
       }).catch(function () {
-        return { name: "Administrador", email: "admin@mercado.local" };
+        return { name: "Administrador", email: "admin@mercado.local", businessName: "Mi Mercado" };
       });
     },
     getSupabaseClient: function () {

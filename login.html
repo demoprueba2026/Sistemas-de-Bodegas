@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f3f7f3">
   <link rel="canonical" href="https://sistemadebodegas.vercel.app/login.html">
-  <meta name="description" content="Acceso al sistema web de administración de bodegas para gestionar inventario, registrar ventas y consultar reportes.">
-  <title>Iniciar sesión — Mercado</title>
+  <meta name="description" content="Inicia sesión o crea una cuenta para administrar de forma privada el inventario de tu negocio.">
+  <title>Acceder o crear cuenta — Mercado</title>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Iniciar sesión — Mercado",
+    "name": "Acceder o crear cuenta — Mercado",
     "url": "https://sistemadebodegas.vercel.app/login.html",
-    "description": "Página de acceso al sistema de administración de bodegas Mercado.",
+    "description": "Acceso y registro para administrar de forma privada el inventario de cada negocio.",
     "inLanguage": "es",
     "isPartOf": {
       "@type": "WebSite",
@@ -59,6 +59,37 @@
         <p id="login-error" class="login-error" role="alert" aria-live="polite"></p>
         <button class="button primary login-submit" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button>
         <button type="button" class="forgot-password-button" id="forgot-password">¿Olvidaste tu contraseña?</button>
+        <p class="login-switch">¿Tu negocio aún no tiene cuenta? <button type="button" class="forgot-password-button" id="show-signup">Crear cuenta</button></p>
+      </form>
+      <form id="signup-form" class="login-form" hidden>
+        <div class="login-intro recovery-intro">
+          <p class="login-eyebrow">NUEVO NEGOCIO</p>
+          <h1>Crea tu cuenta</h1>
+          <p>Tu inventario y tus ventas serán privados para tu negocio.</p>
+        </div>
+        <div class="field">
+          <label for="signup-name">Tu nombre</label>
+          <input id="signup-name" name="name" type="text" autocomplete="name" maxlength="80" required placeholder="Nombre y apellido">
+        </div>
+        <div class="field">
+          <label for="signup-business">Nombre del negocio</label>
+          <input id="signup-business" name="business" type="text" autocomplete="organization" maxlength="80" required placeholder="Ej. Bodega San José">
+        </div>
+        <div class="field">
+          <label for="signup-email">Correo electrónico</label>
+          <input id="signup-email" name="email" type="email" autocomplete="email" required placeholder="nombre@correo.com">
+        </div>
+        <div class="field">
+          <label for="signup-password">Contraseña</label>
+          <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo 8 caracteres">
+        </div>
+        <div class="field">
+          <label for="signup-confirm-password">Confirmar contraseña</label>
+          <input id="signup-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Escribe de nuevo la contraseña">
+        </div>
+        <p id="signup-message" class="login-error" role="status" aria-live="polite"></p>
+        <button class="button primary login-submit" id="signup-submit" type="submit">Crear cuenta <span aria-hidden="true">→</span></button>
+        <button type="button" class="forgot-password-button" id="signup-back-to-login">Volver a iniciar sesión</button>
       </form>
       <form id="recovery-form" class="login-form" hidden>
         <div class="login-intro recovery-intro">
@@ -91,7 +122,7 @@
         <p id="reset-message" class="login-error" role="status" aria-live="polite"></p>
         <button class="button primary login-submit" type="submit">Guardar contraseña <span aria-hidden="true">→</span></button>
       </form>
-      <p class="login-footnote">Acceso para personal autorizado de la tienda.</p>
+      <p class="login-footnote">Cada negocio administra únicamente sus propios datos.</p>
     </section>
     <p class="login-copyright">Mercado · Administración de tienda</p>
   </main>

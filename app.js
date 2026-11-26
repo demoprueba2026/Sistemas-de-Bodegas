@@ -276,6 +276,9 @@
   window.MercadoAuth.getAccountInfo().then(function (account) {
     document.getElementById("account-name").textContent = account.name;
     document.getElementById("account-email").textContent = account.email;
+    document.getElementById("store-title").textContent = account.businessName;
+    document.getElementById("store-avatar").textContent =
+      account.businessName.trim().charAt(0).toLocaleUpperCase() || "M";
   });
   document.getElementById("switch-account").addEventListener("click", function () {
     window.MercadoAuth.logout();
